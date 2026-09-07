@@ -1,9 +1,14 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getPlayerCards } from "./players.functions";
+import { getPlayersSnapshot } from "./players.functions";
 
-export const playerCardsQueryOptions = queryOptions({
-  queryKey: ["player-cards"],
-  queryFn: () => getPlayerCards(),
+export const playersSnapshotQueryOptions = queryOptions({
+  queryKey: ["players-snapshot"],
+  queryFn: () => getPlayersSnapshot(),
   staleTime: 60_000,
   retry: false,
 });
+
+export function formatDateTime(iso: string | null | undefined) {
+  if (!iso) return "Never";
+  return new Date(iso).toLocaleString();
+}

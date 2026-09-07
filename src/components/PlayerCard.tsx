@@ -1,5 +1,5 @@
 import { ImageOff } from "lucide-react";
-import type { PlayerCardRecord } from "@/lib/players.functions";
+import type { PlayerCardRecord } from "@/lib/playerTypes";
 
 const STAT_KEYS = ["pac", "sho", "pas", "dri", "def", "phy"] as const;
 
