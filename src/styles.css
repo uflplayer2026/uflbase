@@ -327,4 +327,59 @@ h3 {
     padding: 1.5rem;
     text-align: center;
   }
+
+  .field {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklch, var(--color-card) 70%, transparent);
+    color: var(--color-foreground);
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .field:focus-visible {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-primary) 35%, transparent);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    padding: 0.6rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: opacity 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-foreground);
+    padding: 0.55rem 0.9rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .btn-secondary:hover {
+    background: color-mix(in oklch, var(--color-card) 70%, transparent);
+  }
 }
+
