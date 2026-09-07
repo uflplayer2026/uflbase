@@ -10,6 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as CardsIndexRouteImport } from './routes/cards.index'
 import { Route as CardsCardIdRouteImport } from './routes/cards.$cardId'
 import { Route as ApiPublicSyncCronRouteImport } from './routes/api/public/sync-cron'
@@ -18,6 +21,20 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const CardsIndexRoute = CardsIndexRouteImport.update({
   id: '/cards/',
@@ -37,12 +54,16 @@ const ApiPublicSyncCronRoute = ApiPublicSyncCronRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
@@ -50,20 +71,45 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cards/$cardId' | '/cards/' | '/api/public/sync-cron'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/settings'
+    | '/cards/$cardId'
+    | '/cards/'
+    | '/api/public/sync-cron'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cards/$cardId' | '/cards' | '/api/public/sync-cron'
-  id: '__root__' | '/' | '/cards/$cardId' | '/cards/' | '/api/public/sync-cron'
+  to:
+    | '/'
+    | '/auth'
+    | '/settings'
+    | '/cards/$cardId'
+    | '/cards'
+    | '/api/public/sync-cron'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/settings'
+    | '/cards/$cardId'
+    | '/cards/'
+    | '/api/public/sync-cron'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   CardsCardIdRoute: typeof CardsCardIdRoute
   CardsIndexRoute: typeof CardsIndexRoute
   ApiPublicSyncCronRoute: typeof ApiPublicSyncCronRoute
@@ -77,6 +123,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/cards/': {
       id: '/cards/'
@@ -102,8 +169,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   CardsCardIdRoute: CardsCardIdRoute,
   CardsIndexRoute: CardsIndexRoute,
   ApiPublicSyncCronRoute: ApiPublicSyncCronRoute,
