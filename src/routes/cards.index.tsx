@@ -1,9 +1,14 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowDownUp } from "lucide-react";
+import { ArrowDownUp, X } from "lucide-react";
 import { PlayerCard } from "@/components/PlayerCard";
-import { LoadingState, ErrorState, EmptyState, NoResultsState } from "@/components/CardsState";
+import {
+  CardGridSkeleton,
+  ErrorState,
+  EmptyState,
+  NoResultsState,
+} from "@/components/CardsState";
 import { playersSnapshotQueryOptions, formatDateTime } from "@/lib/playersQuery";
 import type { PlayerCardRecord, SortKey } from "@/lib/playerTypes";
 
@@ -79,7 +84,7 @@ function CardsPage() {
   };
   const navigate = useNavigate({ from: "/cards/" });
   const [visible, setVisible] = useState(PAGE_SIZE);
-  const { data, isPending, isError, error } = useQuery(playersSnapshotQueryOptions);
+  const { data, isPending, isError, error, refetch } = useQuery(playersSnapshotQueryOptions);
 
   const players = data?.players ?? [];
 
@@ -123,35 +128,37 @@ function CardsPage() {
     });
   };
 
+  const clearFilters = () => setSearch({ q: "", position: "", nation: "" });
+  const activeFilters = [
+    search.q ? { key: "q" as const, label: `Name: ${search.q}` } : null,
+    search.position ? { key: "position" as const, label: `Position: ${search.position}` } : null,
+    search.nation ? { key: "nation" as const, label: `Nation: ${search.nation}` } : null,
+  ].filter(Boolean) as { key: "q" | "position" | "nation"; label: string }[];
+
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:py-12">
-      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">Card Database</h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {data ? `${filtered.length} of ${data.cardCount} cards` : "Loading…"}
-            {data ? ` · Last synced: ${formatDateTime(data.lastSuccessAt)}` : ""}
-          </p>
-        </div>
-        <Link to="/" className="text-sm font-medium text-primary hover:underline">
-          ← Home
-        </Link>
+    <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-10">
+      <header className="mb-4">
+        <h1 className="text-2xl font-bold sm:text-3xl">Card Database</h1>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {data ? `${filtered.length} of ${data.cardCount} cards` : "Loading…"}
+          {data ? ` · Last synced: ${formatDateTime(data.lastSuccessAt)}` : ""}
+        </p>
       </header>
 
-      <section className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Search and filters" className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <input
           type="search"
           value={search.q}
           onChange={(e) => setSearch({ q: e.target.value })}
           placeholder="Search player name…"
           aria-label="Search player name"
-          className="field sm:col-span-2 lg:col-span-1"
+          className="field focus-ring min-h-11 sm:col-span-2 lg:col-span-1"
         />
         <select
           value={search.position}
           onChange={(e) => setSearch({ position: e.target.value })}
           aria-label="Filter by position"
-          className="field"
+          className="field focus-ring min-h-11"
         >
           <option value="">All positions</option>
           {positions.map((p) => (
@@ -164,7 +171,7 @@ function CardsPage() {
           value={search.nation}
           onChange={(e) => setSearch({ nation: e.target.value })}
           aria-label="Filter by nation"
-          className="field"
+          className="field focus-ring min-h-11"
         >
           <option value="">All nations</option>
           {nations.map((n) => (
@@ -178,7 +185,7 @@ function CardsPage() {
             value={search.sort}
             onChange={(e) => setSearch({ sort: e.target.value as SortKey })}
             aria-label="Sort by"
-            className="field flex-1"
+            className="field focus-ring min-h-11 flex-1"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.key} value={o.key}>
@@ -189,8 +196,8 @@ function CardsPage() {
           <button
             type="button"
             onClick={() => setSearch({ dir: search.dir === "asc" ? "desc" : "asc" })}
-            className="field flex items-center gap-1 px-3"
-            aria-label={`Sort direction: ${search.dir === "asc" ? "ascending" : "descending"}`}
+            className="field focus-ring flex min-h-11 items-center gap-1 px-3"
+            aria-label={`Sort direction: ${search.dir === "asc" ? "ascending" : "descending"}. Activate to switch.`}
           >
             <ArrowDownUp className="size-4" aria-hidden />
             {search.dir === "asc" ? "ASC" : "DESC"}
@@ -198,14 +205,34 @@ function CardsPage() {
         </div>
       </section>
 
+      {activeFilters.length > 0 ? (
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          {activeFilters.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              className="chip focus-ring"
+              onClick={() => setSearch({ [f.key]: "" } as Partial<Search>)}
+              aria-label={`Remove filter ${f.label}`}
+            >
+              {f.label}
+              <X className="size-3.5" aria-hidden />
+            </button>
+          ))}
+          <button type="button" className="btn-secondary focus-ring" onClick={clearFilters}>
+            Clear filters
+          </button>
+        </div>
+      ) : null}
+
       {isPending ? (
-        <LoadingState />
+        <CardGridSkeleton count={10} />
       ) : isError ? (
-        <ErrorState message={(error as Error).message} />
+        <ErrorState message={(error as Error).message} onRetry={() => void refetch()} />
       ) : players.length === 0 ? (
         <EmptyState />
       ) : filtered.length === 0 ? (
-        <NoResultsState />
+        <NoResultsState onClear={clearFilters} />
       ) : (
         <>
           <div className="card-grid">
@@ -214,7 +241,8 @@ function CardsPage() {
                 key={player.id}
                 to="/cards/$cardId"
                 params={{ cardId: player.id }}
-                className="block focus-visible:outline-none"
+                className="focus-ring block rounded-xl"
+                aria-label={`View card details for ${player.playerName || "player"}`}
               >
                 <PlayerCard player={player} />
               </Link>
@@ -222,7 +250,11 @@ function CardsPage() {
           </div>
           {visible < filtered.length ? (
             <div className="mt-8 flex justify-center">
-              <button type="button" className="btn-primary" onClick={() => setVisible((v) => v + PAGE_SIZE)}>
+              <button
+                type="button"
+                className="btn-primary focus-ring"
+                onClick={() => setVisible((v) => v + PAGE_SIZE)}
+              >
                 Load more ({filtered.length - visible} left)
               </button>
             </div>
