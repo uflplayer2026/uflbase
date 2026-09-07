@@ -8,11 +8,11 @@ import { playersSnapshotQueryOptions, formatDateTime } from "@/lib/playersQuery"
 import type { PlayerCardRecord, SortKey } from "@/lib/playerTypes";
 
 type Search = {
-  q?: string;
-  position?: string;
-  nation?: string;
-  sort?: SortKey;
-  dir?: "asc" | "desc";
+  q?: string | undefined;
+  position?: string | undefined;
+  nation?: string | undefined;
+  sort?: SortKey | undefined;
+  dir?: "asc" | "desc" | undefined;
 };
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
