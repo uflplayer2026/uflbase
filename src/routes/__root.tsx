@@ -142,13 +142,27 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        <Link to="/settings" className="hover:text-foreground">
-          Admin
-        </Link>
-      </footer>
+      <div className="flex min-h-screen flex-col">
+        <OfflineNotice />
+        <SiteHeader />
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <div className="flex-1">
+          <Outlet />
+        </div>
+        <footer className="mt-10 border-t border-border/60 px-4 py-6 text-center text-xs text-muted-foreground">
+          <p>
+            Community-made database. Not affiliated with or endorsed by Strikerz Inc.
+          </p>
+          <p className="mt-2 flex items-center justify-center gap-3">
+            <Link to="/about" className="focus-ring rounded hover:text-foreground">
+              About
+            </Link>
+            <Link to="/settings" className="focus-ring rounded hover:text-foreground">
+              Admin
+            </Link>
+          </p>
+        </footer>
+      </div>
     </QueryClientProvider>
   );
 }
