@@ -39,7 +39,6 @@ function CardDetail() {
     <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:py-10">
       <Link
         to="/cards"
-        search={{ q: "", position: "", nation: "", sort: "ovr", dir: "desc" }}
         className="mb-5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
       >
         <ChevronLeft className="size-4" aria-hidden /> Back to cards

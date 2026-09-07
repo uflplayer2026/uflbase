@@ -8,11 +8,11 @@ import { playersSnapshotQueryOptions, formatDateTime } from "@/lib/playersQuery"
 import type { PlayerCardRecord, SortKey } from "@/lib/playerTypes";
 
 type Search = {
-  q: string;
-  position: string;
-  nation: string;
-  sort: SortKey;
-  dir: "asc" | "desc";
+  q?: string;
+  position?: string;
+  nation?: string;
+  sort?: SortKey;
+  dir?: "asc" | "desc";
 };
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
@@ -30,11 +30,15 @@ const PAGE_SIZE = 60;
 
 export const Route = createFileRoute("/cards/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    q: typeof search["q"] === "string" ? search["q"] : "",
-    position: typeof search["position"] === "string" ? search["position"] : "",
-    nation: typeof search["nation"] === "string" ? search["nation"] : "",
-    sort: (SORT_OPTIONS.some((o) => o.key === search["sort"]) ? search["sort"] : "ovr") as SortKey,
-    dir: search["dir"] === "asc" ? "asc" : "desc",
+    q: typeof search["q"] === "string" && search["q"] !== "" ? search["q"] : undefined,
+    position:
+      typeof search["position"] === "string" && search["position"] !== ""
+        ? search["position"]
+        : undefined,
+    nation:
+      typeof search["nation"] === "string" && search["nation"] !== "" ? search["nation"] : undefined,
+    sort: SORT_OPTIONS.some((o) => o.key === search["sort"]) ? (search["sort"] as SortKey) : undefined,
+    dir: search["dir"] === "asc" ? "asc" : undefined,
   }),
   head: () => ({
     meta: [
@@ -65,8 +69,15 @@ function compare(a: PlayerCardRecord, b: PlayerCardRecord, sort: SortKey) {
 }
 
 function CardsPage() {
-  const search = Route.useSearch();
-  const navigate = useNavigate({ from: "/cards" });
+  const rawSearch = Route.useSearch();
+  const search = {
+    q: rawSearch.q ?? "",
+    position: rawSearch.position ?? "",
+    nation: rawSearch.nation ?? "",
+    sort: rawSearch.sort ?? ("ovr" as SortKey),
+    dir: rawSearch.dir ?? ("desc" as const),
+  };
+  const navigate = useNavigate({ from: "/cards/" });
   const [visible, setVisible] = useState(PAGE_SIZE);
   const { data, isPending, isError, error } = useQuery(playersSnapshotQueryOptions);
 
@@ -99,7 +110,17 @@ function CardsPage() {
 
   const setSearch = (patch: Partial<Search>) => {
     setVisible(PAGE_SIZE);
-    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+    const next: Search = { ...search, ...patch };
+    navigate({
+      search: {
+        q: next.q || undefined,
+        position: next.position || undefined,
+        nation: next.nation || undefined,
+        sort: next.sort === "ovr" ? undefined : next.sort,
+        dir: next.dir === "desc" ? undefined : next.dir,
+      },
+      replace: true,
+    });
   };
 
   return (
