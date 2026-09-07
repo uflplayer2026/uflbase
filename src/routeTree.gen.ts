@@ -10,17 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CardsRouteImport } from './routes/cards'
 import { Route as ApiPublicSyncCronRouteImport } from './routes/api/public/sync-cron'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CardsRoute = CardsRouteImport.update({
-  id: '/cards',
-  path: '/cards',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSyncCronRoute = ApiPublicSyncCronRouteImport.update({
@@ -31,31 +25,27 @@ const ApiPublicSyncCronRoute = ApiPublicSyncCronRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/cards': typeof CardsRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/cards': typeof CardsRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/cards': typeof CardsRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cards' | '/api/public/sync-cron'
+  fullPaths: '/' | '/api/public/sync-cron'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cards' | '/api/public/sync-cron'
-  id: '__root__' | '/' | '/cards' | '/api/public/sync-cron'
+  to: '/' | '/api/public/sync-cron'
+  id: '__root__' | '/' | '/api/public/sync-cron'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CardsRoute: typeof CardsRoute
   ApiPublicSyncCronRoute: typeof ApiPublicSyncCronRoute
 }
 
@@ -66,13 +56,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cards': {
-      id: '/cards'
-      path: '/cards'
-      fullPath: '/cards'
-      preLoaderRoute: typeof CardsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/sync-cron': {
@@ -87,7 +70,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CardsRoute: CardsRoute,
   ApiPublicSyncCronRoute: ApiPublicSyncCronRoute,
 }
 export const routeTree = rootRouteImport
