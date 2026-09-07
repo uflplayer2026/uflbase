@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import { SiteHeader } from "@/components/SiteHeader";
+import { OfflineNotice } from "@/components/OfflineNotice";
 
 function NotFoundComponent() {
   return (
@@ -77,15 +79,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { title: "UFL Mobile Player Card Database" },
+      {
+        name: "description",
+        content:
+          "Community-made UFL Mobile player card database with ratings, positions, nations, stats and perks.",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "UFL Mobile Player Card Database" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "theme-color", content: "#0b0f1a" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "UFL Cards" },
     ],
     links: [
       {
@@ -98,7 +104,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Barlow:wght@400;500;600&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/icon-192.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootShell,
@@ -136,13 +144,27 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        <Link to="/settings" className="hover:text-foreground">
-          Admin
-        </Link>
-      </footer>
+      <div className="flex min-h-screen flex-col">
+        <OfflineNotice />
+        <SiteHeader />
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <div className="flex-1">
+          <Outlet />
+        </div>
+        <footer className="mt-10 border-t border-border/60 px-4 py-6 text-center text-xs text-muted-foreground">
+          <p>
+            Community-made database. Not affiliated with or endorsed by Strikerz Inc.
+          </p>
+          <p className="mt-2 flex items-center justify-center gap-3">
+            <Link to="/about" className="focus-ring rounded hover:text-foreground">
+              About
+            </Link>
+            <Link to="/settings" className="focus-ring rounded hover:text-foreground">
+              Admin
+            </Link>
+          </p>
+        </footer>
+      </div>
     </QueryClientProvider>
   );
 }

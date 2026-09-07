@@ -1,21 +1,26 @@
+import { memo } from "react";
 import { ImageOff } from "lucide-react";
 import type { PlayerCardRecord } from "@/lib/playerTypes";
-
-const STAT_KEYS = ["pac", "sho", "pas", "dri", "def", "phy"] as const;
+import { STAT_KEYS } from "@/lib/playerTypes";
 
 function StatValue({ value }: { value: number | null }) {
   return <span className="stat-value">{value === null ? "—" : value}</span>;
 }
 
-export function PlayerCard({ player }: { player: PlayerCardRecord }) {
+/** The single reusable card presentation used on every page. */
+function PlayerCardBase({ player }: { player: PlayerCardRecord }) {
+  const name = player.playerName || "Unknown player";
   return (
     <article className="player-card">
       <div className="player-card-media">
         {player.cardImage ? (
           <img
             src={player.cardImage}
-            alt={player.playerName || "Player card"}
+            alt={`${name} — ${player.position || "player"} card${
+              player.ovr === null ? "" : `, ${player.ovr} overall`
+            }`}
             loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
         ) : (
@@ -48,8 +53,10 @@ export function PlayerCard({ player }: { player: PlayerCardRecord }) {
           ))}
         </dl>
 
-        <p className="player-card-perk">{player.perk || "—"}</p>
+        {player.perk ? <p className="player-card-perk">{player.perk}</p> : null}
       </div>
     </article>
   );
 }
+
+export const PlayerCard = memo(PlayerCardBase);
