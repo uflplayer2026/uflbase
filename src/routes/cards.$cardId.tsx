@@ -1,0 +1,81 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft } from "lucide-react";
+import { PlayerCard } from "@/components/PlayerCard";
+import { LoadingState, ErrorState } from "@/components/CardsState";
+import { playersSnapshotQueryOptions } from "@/lib/playersQuery";
+import { STAT_KEYS } from "@/lib/playerTypes";
+
+export const Route = createFileRoute("/cards/$cardId")({
+  head: () => ({
+    meta: [
+      { title: "Player Card — UFL Mobile Player Card Database" },
+      { name: "description", content: "Full stats, perk and rating for a UFL Mobile player card." },
+      { property: "og:title", content: "Player Card — UFL Mobile Player Card Database" },
+      {
+        property: "og:description",
+        content: "Full stats, perk and rating for a UFL Mobile player card.",
+      },
+    ],
+  }),
+  component: CardDetail,
+});
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between border-b border-border/60 py-2 text-sm last:border-0">
+      <span className="text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
+      <span className="font-semibold">{value}</span>
+    </div>
+  );
+}
+
+function CardDetail() {
+  const { cardId } = Route.useParams();
+  const { data, isPending, isError, error } = useQuery(playersSnapshotQueryOptions);
+  const player = data?.players.find((p) => p.id === cardId);
+
+  return (
+    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:py-10">
+      <Link
+        to="/cards"
+        search={{ q: "", position: "", nation: "", sort: "ovr", dir: "desc" }}
+        className="mb-5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+      >
+        <ChevronLeft className="size-4" aria-hidden /> Back to cards
+      </Link>
+
+      {isPending ? (
+        <LoadingState />
+      ) : isError ? (
+        <ErrorState message={(error as Error).message} />
+      ) : !player ? (
+        <div className="surface-panel">
+          <h1 className="text-base font-semibold">No player cards found.</h1>
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-[minmax(0,220px)_1fr]">
+          <div>
+            <PlayerCard player={player} />
+          </div>
+          <div className="surface-panel text-left">
+            <h1 className="text-xl font-bold">{player.playerName || "—"}</h1>
+            <div className="mt-4">
+              <Row label="OVR" value={player.ovr === null ? "—" : String(player.ovr)} />
+              <Row label="Position" value={player.position || "—"} />
+              <Row label="Nation" value={player.nation || "—"} />
+              {STAT_KEYS.map((key) => (
+                <Row
+                  key={key}
+                  label={key.toUpperCase()}
+                  value={player[key] === null ? "—" : String(player[key])}
+                />
+              ))}
+              <Row label="Perk" value={player.perk || "—"} />
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
