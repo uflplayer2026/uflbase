@@ -14,13 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      sheet_sync_state: {
+        Row: {
+          card_count: number
+          id: string
+          last_attempt_at: string | null
+          last_duration_ms: number | null
+          last_error: string | null
+          last_status: string | null
+          last_success_at: string | null
+          players: Json
+          sync_running: boolean
+          sync_started_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          card_count?: number
+          id: string
+          last_attempt_at?: string | null
+          last_duration_ms?: number | null
+          last_error?: string | null
+          last_status?: string | null
+          last_success_at?: string | null
+          players?: Json
+          sync_running?: boolean
+          sync_started_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          card_count?: number
+          id?: string
+          last_attempt_at?: string | null
+          last_duration_ms?: number | null
+          last_error?: string | null
+          last_status?: string | null
+          last_success_at?: string | null
+          players?: Json
+          sync_running?: boolean
+          sync_started_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      acquire_sync_lock: { Args: { _stale_seconds?: number }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
