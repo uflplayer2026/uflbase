@@ -62,9 +62,9 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.75rem;
+  --background: oklch(0.16 0.03 265);
+  --foreground: oklch(0.97 0.01 250);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
@@ -140,5 +140,191 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+  }
+}
+
+
+/* ── UFL Mobile Card Database design system ───────────────────────────── */
+:root {
+  --font-display: "Chakra Petch", system-ui, sans-serif;
+  --font-body: "Barlow", system-ui, sans-serif;
+
+  --card: oklch(0.21 0.035 265);
+  --card-foreground: oklch(0.97 0.01 250);
+  --popover: oklch(0.21 0.035 265);
+  --popover-foreground: oklch(0.97 0.01 250);
+  --primary: oklch(0.82 0.19 145);
+  --primary-foreground: oklch(0.18 0.05 160);
+  --secondary: oklch(0.27 0.04 265);
+  --secondary-foreground: oklch(0.97 0.01 250);
+  --muted: oklch(0.26 0.035 265);
+  --muted-foreground: oklch(0.72 0.03 258);
+  --accent: oklch(0.72 0.17 210);
+  --accent-foreground: oklch(0.16 0.03 265);
+  --border: oklch(0.99 0 0 / 12%);
+  --input: oklch(0.99 0 0 / 14%);
+  --ring: oklch(0.82 0.19 145);
+
+  --gradient-page: radial-gradient(
+      120% 80% at 50% -10%,
+      oklch(0.3 0.09 200 / 55%) 0%,
+      transparent 65%
+    ),
+    linear-gradient(180deg, oklch(0.16 0.03 265) 0%, oklch(0.13 0.025 265) 100%);
+  --gradient-card: linear-gradient(160deg, oklch(0.28 0.05 250) 0%, oklch(0.18 0.035 265) 60%);
+  --gradient-badge: linear-gradient(140deg, oklch(0.86 0.19 145), oklch(0.72 0.17 195));
+  --shadow-card: 0 18px 40px -22px oklch(0 0 0 / 90%);
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--gradient-page);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+@utility card-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  @media (min-width: 640px) {
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@layer components {
+  .player-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card);
+    transition:
+      transform 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  .player-card:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklch, var(--color-primary) 45%, transparent);
+  }
+
+  .player-card-media {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: color-mix(in oklch, var(--color-muted) 70%, transparent);
+  }
+
+  .player-card-placeholder {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    color: var(--color-muted-foreground);
+  }
+
+  .player-card-badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    border-radius: var(--radius-md);
+    padding: 0.35rem 0.5rem;
+    font-family: var(--font-display);
+    background: var(--gradient-badge);
+    color: var(--color-primary-foreground);
+  }
+
+  .player-card-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.7rem;
+  }
+
+  .player-card-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-transform: uppercase;
+    color: var(--color-card-foreground);
+  }
+
+  .player-card-nation {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+
+  .player-card-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.3rem 0.25rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.5rem;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: var(--color-muted-foreground);
+  }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-card-foreground);
+  }
+
+  .player-card-perk {
+    margin-top: auto;
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklch, var(--color-accent) 18%, transparent);
+    padding: 0.3rem 0.45rem;
+    text-align: center;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-card-foreground);
+  }
+
+  .surface-panel {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklch, var(--color-card) 80%, transparent);
+    padding: 1.5rem;
+    text-align: center;
   }
 }
