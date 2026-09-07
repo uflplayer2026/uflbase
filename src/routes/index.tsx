@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PlayerCard } from "@/components/PlayerCard";
 import { LoadingState, ErrorState, EmptyState } from "@/components/CardsState";
-import { playerCardsQueryOptions } from "@/lib/playersQuery";
+import { playersSnapshotQueryOptions, formatDateTime } from "@/lib/playersQuery";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,8 +23,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { data, isPending, isError, error } = useQuery(playerCardsQueryOptions);
-  const featured = data?.slice(0, 8) ?? [];
+  const { data, isPending, isError, error } = useQuery(playersSnapshotQueryOptions);
+  const featured = data?.players.slice(0, 8) ?? [];
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:py-16">
@@ -36,12 +36,14 @@ function Index() {
         <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
           Community-made UFL Mobile player card database.
         </p>
-        <Link
-          to="/cards"
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-        >
+        <Link to="/cards" className="btn-primary mt-6 inline-flex">
           Browse all cards
         </Link>
+        {data ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            {data.cardCount} cards · Last synced: {formatDateTime(data.lastSuccessAt)}
+          </p>
+        ) : null}
       </section>
 
       <section>
@@ -55,7 +57,9 @@ function Index() {
         ) : (
           <div className="card-grid">
             {featured.map((player) => (
-              <PlayerCard key={player.id} player={player} />
+              <Link key={player.id} to="/cards/$cardId" params={{ cardId: player.id }} className="block">
+                <PlayerCard player={player} />
+              </Link>
             ))}
           </div>
         )}
