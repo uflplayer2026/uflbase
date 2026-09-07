@@ -39,7 +39,7 @@ function CardDetail() {
     <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:py-10">
       <Link
         to="/cards"
-        className="mb-5 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+        className="focus-ring mb-5 inline-flex min-h-11 items-center gap-1 rounded text-sm font-medium text-accent hover:underline"
       >
         <ChevronLeft className="size-4" aria-hidden /> Back to cards
       </Link>
