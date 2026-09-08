@@ -12,11 +12,12 @@ const METRICS: { key: Metric; label: string }[] = [
   { key: "ovr", label: "Highest OVR" },
   { key: "pac", label: "Highest PAC" },
   { key: "sho", label: "Highest SHO" },
-  { key: "pas", label: "Highest PAS" },
-  { key: "dri", label: "Highest DRI" },
+  { key: "pas", label: "Highest PASS" },
+  { key: "dri", label: "Highest DRIB" },
   { key: "def", label: "Highest DEF" },
   { key: "phy", label: "Highest PHY" },
 ];
+
 
 const TOP_N = 12;
 

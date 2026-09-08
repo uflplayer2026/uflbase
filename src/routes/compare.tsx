@@ -7,6 +7,8 @@ import { CardPicker } from "@/components/CardPicker";
 import { CardGridSkeleton, ErrorState, EmptyState } from "@/components/CardsState";
 import { playersSnapshotQueryOptions } from "@/lib/playersQuery";
 import { STAT_KEYS } from "@/lib/playerTypes";
+import { STAT_LABELS } from "@/lib/statLabels";
+
 import type { PlayerCardRecord } from "@/lib/playerTypes";
 
 type Search = { a?: string | undefined; b?: string | undefined };
@@ -153,7 +155,7 @@ function ComparisonResult({ cardA, cardB }: { cardA: PlayerCardRecord; cardB: Pl
             <span className={`compare-value ${statClass(cardA[key], cardB[key])}`}>
               {cardA[key] ?? "—"}
             </span>
-            <span className="compare-label">{key.toUpperCase()}</span>
+            <span className="compare-label">{STAT_LABELS[key]}</span>
             <span className={`compare-value ${statClass(cardB[key], cardA[key])}`}>
               {cardB[key] ?? "—"}
             </span>
