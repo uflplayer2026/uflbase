@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      changelog_entries: {
+        Row: {
+          categories: Json
+          created_at: string
+          description: string
+          entry_date: string
+          id: string
+          title: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          categories?: Json
+          created_at?: string
+          description?: string
+          entry_date?: string
+          id?: string
+          title: string
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          categories?: Json
+          created_at?: string
+          description?: string
+          entry_date?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       sheet_sync_state: {
         Row: {
           card_count: number
