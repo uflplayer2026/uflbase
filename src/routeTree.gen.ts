@@ -14,7 +14,10 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BestRouteImport } from './routes/best'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as StatsRouteImport } from './routes/stats'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as CardsIndexRouteImport } from './routes/cards.index'
 import { Route as CardsCardIdRouteImport } from './routes/cards.$cardId'
@@ -44,9 +47,24 @@ const BestRoute = BestRouteImport.update({
   path: '/best',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -75,7 +93,10 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/best': typeof BestRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
+  '/favorites': typeof FavoritesRoute
+  '/stats': typeof StatsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
@@ -86,7 +107,10 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/best': typeof BestRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
+  '/favorites': typeof FavoritesRoute
+  '/stats': typeof StatsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards': typeof CardsIndexRoute
@@ -99,7 +123,10 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/best': typeof BestRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
+  '/favorites': typeof FavoritesRoute
+  '/stats': typeof StatsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
@@ -112,7 +139,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/best'
+    | '/changelog'
     | '/compare'
+    | '/favorites'
+    | '/stats'
     | '/settings'
     | '/cards/$cardId'
     | '/cards/'
@@ -123,7 +153,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/best'
+    | '/changelog'
     | '/compare'
+    | '/favorites'
+    | '/stats'
     | '/settings'
     | '/cards/$cardId'
     | '/cards'
@@ -135,7 +168,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/best'
+    | '/changelog'
     | '/compare'
+    | '/favorites'
+    | '/stats'
     | '/_authenticated/settings'
     | '/cards/$cardId'
     | '/cards/'
@@ -148,7 +184,10 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   BestRoute: typeof BestRoute
+  ChangelogRoute: typeof ChangelogRoute
   CompareRoute: typeof CompareRoute
+  FavoritesRoute: typeof FavoritesRoute
+  StatsRoute: typeof StatsRoute
   CardsCardIdRoute: typeof CardsCardIdRoute
   CardsIndexRoute: typeof CardsIndexRoute
   ApiPublicSyncCronRoute: typeof ApiPublicSyncCronRoute
@@ -191,11 +230,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compare': {
       id: '/compare'
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -246,7 +306,10 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   BestRoute: BestRoute,
+  ChangelogRoute: ChangelogRoute,
   CompareRoute: CompareRoute,
+  FavoritesRoute: FavoritesRoute,
+  StatsRoute: StatsRoute,
   CardsCardIdRoute: CardsCardIdRoute,
   CardsIndexRoute: CardsIndexRoute,
   ApiPublicSyncCronRoute: ApiPublicSyncCronRoute,

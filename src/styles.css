@@ -571,16 +571,51 @@ h3 {
 
   .rank-badge {
     position: absolute;
-    left: 0.5rem;
+    right: 0.5rem;
     top: 0.5rem;
-    z-index: 2;
+    z-index: 3;
     border-radius: 9999px;
-    background: color-mix(in oklch, var(--color-background) 82%, transparent);
+    background: color-mix(in oklch, var(--color-background) 88%, transparent);
     border: 1px solid var(--color-border);
-    padding: 0.1rem 0.5rem;
-    font-size: 0.7rem;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.72rem;
     font-weight: 700;
+    line-height: 1.2;
   }
+
+  .icon-btn {
+    display: inline-flex;
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklch, var(--color-background) 85%, transparent);
+    color: var(--color-foreground);
+  }
+
+  .icon-btn[data-active="true"] {
+    border-color: var(--color-ring);
+    color: oklch(0.72 0.19 20);
+  }
+
+  .card-action {
+    position: absolute;
+    z-index: 3;
+  }
+
+  .card-action-fav {
+    right: 0.5rem;
+    bottom: 0.5rem;
+  }
+
+  .player-card-name,
+  .player-card-nation,
+  .player-card-perk {
+    overflow-wrap: anywhere;
+  }
+
 }
 
 

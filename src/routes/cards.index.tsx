@@ -3,6 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownUp, X } from "lucide-react";
 import { PlayerCard } from "@/components/PlayerCard";
+import { FavoriteButton } from "@/components/FavoriteButton";
+
 import {
   CardGridSkeleton,
   ErrorState,
@@ -25,11 +27,12 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "playerName", label: "Player Name" },
   { key: "pac", label: "PAC" },
   { key: "sho", label: "SHO" },
-  { key: "pas", label: "PAS" },
-  { key: "dri", label: "DRI" },
+  { key: "pas", label: "PASS" },
+  { key: "dri", label: "DRIB" },
   { key: "def", label: "DEF" },
   { key: "phy", label: "PHY" },
 ];
+
 
 const PAGE_SIZE = 60;
 
@@ -237,16 +240,23 @@ function CardsPage() {
         <>
           <div className="card-grid">
             {filtered.slice(0, visible).map((player) => (
-              <Link
-                key={player.id}
-                to="/cards/$cardId"
-                params={{ cardId: player.id }}
-                className="focus-ring block rounded-xl"
-                aria-label={`View card details for ${player.playerName || "player"}`}
-              >
-                <PlayerCard player={player} />
-              </Link>
+              <div key={player.id} className="relative">
+                <FavoriteButton
+                  cardId={player.id}
+                  name={player.playerName}
+                  className="card-action card-action-fav"
+                />
+                <Link
+                  to="/cards/$cardId"
+                  params={{ cardId: player.id }}
+                  className="focus-ring block rounded-xl"
+                  aria-label={`View card details for ${player.playerName || "player"}`}
+                >
+                  <PlayerCard player={player} />
+                </Link>
+              </div>
             ))}
+
           </div>
           {visible < filtered.length ? (
             <div className="mt-8 flex justify-center">
