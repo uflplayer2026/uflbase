@@ -5,6 +5,10 @@ import { PlayerCard } from "@/components/PlayerCard";
 import { LoadingState, ErrorState } from "@/components/CardsState";
 import { playersSnapshotQueryOptions } from "@/lib/playersQuery";
 import { STAT_KEYS } from "@/lib/playerTypes";
+import { STAT_LABELS } from "@/lib/statLabels";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { ShareCardButton } from "@/components/ShareCardButton";
+
 
 export const Route = createFileRoute("/cards/$cardId")({
   head: () => ({
@@ -58,18 +62,24 @@ function CardDetail() {
             <PlayerCard player={player} />
           </div>
           <div className="surface-panel text-left">
-            <h1 className="text-xl font-bold">{player.playerName || "—"}</h1>
+            <h1 className="text-xl font-bold break-words">{player.playerName || "—"}</h1>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <FavoriteButton cardId={player.id} name={player.playerName} />
+              <ShareCardButton player={player} />
+            </div>
             <div className="mt-4">
+
               <Row label="OVR" value={player.ovr === null ? "—" : String(player.ovr)} />
               <Row label="Position" value={player.position || "—"} />
               <Row label="Nation" value={player.nation || "—"} />
               {STAT_KEYS.map((key) => (
                 <Row
                   key={key}
-                  label={key.toUpperCase()}
+                  label={STAT_LABELS[key]}
                   value={player[key] === null ? "—" : String(player[key])}
                 />
               ))}
+
               <Row label="Perk" value={player.perk || "—"} />
             </div>
           </div>
