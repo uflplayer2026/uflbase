@@ -3,8 +3,11 @@ import { Link } from "@tanstack/react-router";
 const NAV = [
   { to: "/", label: "Home" },
   { to: "/cards", label: "Cards" },
+  { to: "/best", label: "Best" },
+  { to: "/compare", label: "Compare" },
   { to: "/about", label: "About" },
 ] as const;
+
 
 export function SiteHeader() {
   return (

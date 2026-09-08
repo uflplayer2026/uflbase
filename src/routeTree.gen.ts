@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as BestRouteImport } from './routes/best'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as CardsIndexRouteImport } from './routes/cards.index'
 import { Route as CardsCardIdRouteImport } from './routes/cards.$cardId'
@@ -35,6 +37,16 @@ const AboutRoute = AboutRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BestRoute = BestRouteImport.update({
+  id: '/best',
+  path: '/best',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -62,6 +74,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/best': typeof BestRoute
+  '/compare': typeof CompareRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
@@ -71,6 +85,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/best': typeof BestRoute
+  '/compare': typeof CompareRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards': typeof CardsIndexRoute
@@ -82,6 +98,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/best': typeof BestRoute
+  '/compare': typeof CompareRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
@@ -93,6 +111,8 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/best'
+    | '/compare'
     | '/settings'
     | '/cards/$cardId'
     | '/cards/'
@@ -102,6 +122,8 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/best'
+    | '/compare'
     | '/settings'
     | '/cards/$cardId'
     | '/cards'
@@ -112,6 +134,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/auth'
+    | '/best'
+    | '/compare'
     | '/_authenticated/settings'
     | '/cards/$cardId'
     | '/cards/'
@@ -123,6 +147,8 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  BestRoute: typeof BestRoute
+  CompareRoute: typeof CompareRoute
   CardsCardIdRoute: typeof CardsCardIdRoute
   CardsIndexRoute: typeof CardsIndexRoute
   ApiPublicSyncCronRoute: typeof ApiPublicSyncCronRoute
@@ -156,6 +182,20 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/best': {
+      id: '/best'
+      path: '/best'
+      fullPath: '/best'
+      preLoaderRoute: typeof BestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -205,6 +245,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  BestRoute: BestRoute,
+  CompareRoute: CompareRoute,
   CardsCardIdRoute: CardsCardIdRoute,
   CardsIndexRoute: CardsIndexRoute,
   ApiPublicSyncCronRoute: ApiPublicSyncCronRoute,
