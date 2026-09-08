@@ -492,7 +492,97 @@ h3 {
     aspect-ratio: 3 / 4;
     width: 100%;
   }
+
+  .chip[data-active="true"] {
+    border-color: var(--color-ring);
+    background: color-mix(in oklch, var(--color-ring) 26%, transparent);
+    font-weight: 600;
+  }
+
+  .picker-row {
+    display: flex;
+    width: 100%;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-size: 0.875rem;
+  }
+
+  .picker-row:hover {
+    background: color-mix(in oklch, var(--color-muted) 40%, transparent);
+  }
+
+  .picker-row[data-selected="true"] {
+    border-color: var(--color-ring);
+    background: color-mix(in oklch, var(--color-ring) 18%, transparent);
+    font-weight: 600;
+  }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-md);
+    padding: 0.4rem 0.5rem;
+  }
+
+  .compare-row:nth-child(odd) {
+    background: color-mix(in oklch, var(--color-muted) 25%, transparent);
+  }
+
+  .compare-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+
+  .compare-value {
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .compare-value:first-child {
+    text-align: left;
+  }
+
+  .compare-value:last-child {
+    text-align: right;
+  }
+
+  .compare-higher {
+    color: oklch(0.8 0.18 150);
+  }
+
+  .compare-lower {
+    color: var(--color-muted-foreground);
+  }
+
+  .compare-neutral {
+    color: var(--color-foreground);
+  }
+
+  .rank-badge {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5rem;
+    z-index: 2;
+    border-radius: 9999px;
+    background: color-mix(in oklch, var(--color-background) 82%, transparent);
+    border: 1px solid var(--color-border);
+    padding: 0.1rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
 }
+
 
 @keyframes pulse {
   0%,
