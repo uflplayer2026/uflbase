@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BestRouteImport } from './routes/best'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as StatsRouteImport } from './routes/stats'
@@ -44,6 +45,11 @@ const AuthRoute = AuthRouteImport.update({
 const BestRoute = BestRouteImport.update({
   id: '/best',
   path: '/best',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/best': typeof BestRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/favorites': typeof FavoritesRoute
   '/stats': typeof StatsRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/best': typeof BestRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/favorites': typeof FavoritesRoute
   '/stats': typeof StatsRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/best': typeof BestRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/favorites': typeof FavoritesRoute
   '/stats': typeof StatsRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/best'
+    | '/changelog'
     | '/compare'
     | '/favorites'
     | '/stats'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/best'
+    | '/changelog'
     | '/compare'
     | '/favorites'
     | '/stats'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/best'
+    | '/changelog'
     | '/compare'
     | '/favorites'
     | '/stats'
@@ -172,6 +184,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   BestRoute: typeof BestRoute
+  ChangelogRoute: typeof ChangelogRoute
   CompareRoute: typeof CompareRoute
   FavoritesRoute: typeof FavoritesRoute
   StatsRoute: typeof StatsRoute
@@ -215,6 +228,13 @@ declare module '@tanstack/react-router' {
       path: '/best'
       fullPath: '/best'
       preLoaderRoute: typeof BestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -286,6 +306,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   BestRoute: BestRoute,
+  ChangelogRoute: ChangelogRoute,
   CompareRoute: CompareRoute,
   FavoritesRoute: FavoritesRoute,
   StatsRoute: StatsRoute,

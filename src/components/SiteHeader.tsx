@@ -5,8 +5,12 @@ const NAV = [
   { to: "/cards", label: "Cards" },
   { to: "/best", label: "Best" },
   { to: "/compare", label: "Compare" },
+  { to: "/favorites", label: "Favorites" },
+  { to: "/stats", label: "Stats" },
+  { to: "/changelog", label: "What's New" },
   { to: "/about", label: "About" },
 ] as const;
+
 
 
 export function SiteHeader() {

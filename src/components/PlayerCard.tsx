@@ -2,6 +2,8 @@ import { memo } from "react";
 import { ImageOff } from "lucide-react";
 import type { PlayerCardRecord } from "@/lib/playerTypes";
 import { STAT_KEYS } from "@/lib/playerTypes";
+import { STAT_LABELS } from "@/lib/statLabels";
+
 
 function StatValue({ value }: { value: number | null }) {
   return <span className="stat-value">{value === null ? "—" : value}</span>;
@@ -45,7 +47,7 @@ function PlayerCardBase({ player }: { player: PlayerCardRecord }) {
         <dl className="player-card-stats">
           {STAT_KEYS.map((key) => (
             <div key={key} className="stat">
-              <dt className="stat-label">{key.toUpperCase()}</dt>
+              <dt className="stat-label">{STAT_LABELS[key]}</dt>
               <dd>
                 <StatValue value={player[key]} />
               </dd>
