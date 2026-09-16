@@ -249,8 +249,9 @@ function CardsPage() {
       ? `${filtered.length.toLocaleString()} of ${total.toLocaleString()} cards`
       : `${total.toLocaleString()} cards`;
 
-  const panel = (
+  const renderPanel = (idPrefix: string) => (
     <CardFilters
+      idPrefix={idPrefix}
       values={values}
       positions={positions}
       nations={nations}
@@ -274,7 +275,7 @@ function CardsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <aside aria-label="Search and filters" className="hidden lg:block">
-          <div className="filter-panel">{panel}</div>
+          <div className="filter-panel">{renderPanel("side-")}</div>
         </aside>
 
         <div>
@@ -383,7 +384,7 @@ function CardsPage() {
                 <X className="size-4" aria-hidden />
               </button>
             </div>
-            {panel}
+            {renderPanel("drawer-")}
             <button
               type="button"
               className="btn-primary focus-ring mt-4 w-full"

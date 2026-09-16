@@ -44,6 +44,7 @@ export function CardFilters({
   onChange,
   onClear,
   activeCount,
+  idPrefix = "",
 }: {
   values: CardFilterValues;
   positions: string[];
@@ -53,11 +54,13 @@ export function CardFilters({
   onChange: (patch: Partial<CardFilterValues>) => void;
   onClear: () => void;
   activeCount: number;
+  idPrefix?: string;
 }) {
+  const uid = (name: string) => `${idPrefix}${name}`;
   return (
     <div className="space-y-4 text-left">
       <div>
-        <label htmlFor="card-search" className="filter-label">
+        <label htmlFor={uid("card-search")} className="filter-label">
           Player name
         </label>
         <div className="relative mt-1">
@@ -66,7 +69,7 @@ export function CardFilters({
             aria-hidden
           />
           <input
-            id="card-search"
+            id={uid("card-search")}
             type="search"
             value={searchDraft}
             onChange={(e) => onSearchDraft(e.target.value)}
@@ -78,11 +81,11 @@ export function CardFilters({
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label htmlFor="filter-position" className="filter-label">
+          <label htmlFor={uid("filter-position")} className="filter-label">
             Position
           </label>
           <select
-            id="filter-position"
+            id={uid("filter-position")}
             value={values.position}
             onChange={(e) => onChange({ position: e.target.value })}
             className="field focus-ring mt-1 min-h-11 w-full"
@@ -96,11 +99,11 @@ export function CardFilters({
           </select>
         </div>
         <div>
-          <label htmlFor="filter-nation" className="filter-label">
+          <label htmlFor={uid("filter-nation")} className="filter-label">
             Nation
           </label>
           <select
-            id="filter-nation"
+            id={uid("filter-nation")}
             value={values.nation}
             onChange={(e) => onChange({ nation: e.target.value })}
             className="field focus-ring mt-1 min-h-11 w-full"
@@ -117,11 +120,11 @@ export function CardFilters({
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label htmlFor="filter-ovr-min" className="filter-label">
+          <label htmlFor={uid("filter-ovr-min")} className="filter-label">
             OVR min
           </label>
           <input
-            id="filter-ovr-min"
+            id={uid("filter-ovr-min")}
             type="number"
             inputMode="numeric"
             min={0}
@@ -133,11 +136,11 @@ export function CardFilters({
           />
         </div>
         <div>
-          <label htmlFor="filter-ovr-max" className="filter-label">
+          <label htmlFor={uid("filter-ovr-max")} className="filter-label">
             OVR max
           </label>
           <input
-            id="filter-ovr-max"
+            id={uid("filter-ovr-max")}
             type="number"
             inputMode="numeric"
             min={0}
@@ -155,11 +158,11 @@ export function CardFilters({
         <div className="mt-1 grid grid-cols-3 gap-2">
           {STAT_KEYS.map((key) => (
             <div key={key}>
-              <label htmlFor={`filter-${key}`} className="sr-only">
+              <label htmlFor={uid(`filter-${key}`)} className="sr-only">
                 Minimum {STAT_LABELS[key]}
               </label>
               <input
-                id={`filter-${key}`}
+                id={uid(`filter-${key}`)}
                 type="number"
                 inputMode="numeric"
                 min={0}
@@ -176,11 +179,11 @@ export function CardFilters({
       </fieldset>
 
       <div>
-        <label htmlFor="filter-perk" className="filter-label">
+        <label htmlFor={uid("filter-perk")} className="filter-label">
           Perk
         </label>
         <input
-          id="filter-perk"
+          id={uid("filter-perk")}
           type="search"
           value={values.perk}
           onChange={(e) => onChange({ perk: e.target.value })}
@@ -191,11 +194,11 @@ export function CardFilters({
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label htmlFor="filter-sort" className="filter-label">
+          <label htmlFor={uid("filter-sort")} className="filter-label">
             Sort by
           </label>
           <select
-            id="filter-sort"
+            id={uid("filter-sort")}
             value={values.sort}
             onChange={(e) => onChange({ sort: e.target.value as SortKey })}
             className="field focus-ring mt-1 min-h-11 w-full"
@@ -208,11 +211,11 @@ export function CardFilters({
           </select>
         </div>
         <div>
-          <label htmlFor="filter-dir" className="filter-label">
+          <label htmlFor={uid("filter-dir")} className="filter-label">
             Order
           </label>
           <select
-            id="filter-dir"
+            id={uid("filter-dir")}
             value={values.dir}
             onChange={(e) => onChange({ dir: e.target.value as "asc" | "desc" })}
             className="field focus-ring mt-1 min-h-11 w-full"
