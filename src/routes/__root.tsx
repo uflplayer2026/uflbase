@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { OfflineNotice } from "@/components/OfflineNotice";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 function NotFoundComponent() {
   return (
@@ -164,6 +165,7 @@ function RootComponent() {
             </Link>
           </p>
         </footer>
+        <InstallPrompt />
       </div>
     </QueryClientProvider>
   );
