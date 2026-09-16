@@ -670,7 +670,74 @@ h3 {
     overflow-wrap: anywhere;
   }
 
+  .card-action-stack {
+    right: 0.5rem;
+    top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
 
+  li:has(> .rank-badge) .card-action-stack {
+    top: 2.4rem;
+  }
+
+  .filter-panel {
+    position: sticky;
+    top: 1rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklch, var(--color-card) 80%, transparent);
+    padding: 1rem;
+  }
+
+  .filter-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+
+  .filter-count {
+    margin-left: 0.5rem;
+    display: inline-flex;
+    min-width: 1.25rem;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    padding: 0 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .filter-drawer-root {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+  }
+
+  .filter-drawer-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    background: oklch(0 0 0 / 60%);
+  }
+
+  .filter-drawer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-top: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    background: color-mix(in oklch, var(--color-card) 97%, transparent);
+    padding: 1rem 1rem 1.5rem;
+  }
 }
 
 

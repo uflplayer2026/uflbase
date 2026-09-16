@@ -8,6 +8,7 @@ import { STAT_KEYS } from "@/lib/playerTypes";
 import { STAT_LABELS } from "@/lib/statLabels";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ShareCardButton } from "@/components/ShareCardButton";
+import { CompareButton } from "@/components/CompareButton";
 
 
 export const Route = createFileRoute("/cards/$cardId")({
@@ -65,6 +66,7 @@ function CardDetail() {
             <h1 className="text-xl font-bold break-words">{player.playerName || "—"}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <FavoriteButton cardId={player.id} name={player.playerName} />
+              <CompareButton cardId={player.id} name={player.playerName} withLabel />
               <ShareCardButton player={player} />
             </div>
             <div className="mt-4">

@@ -19,7 +19,7 @@ export function CardGridSkeleton({ count = 10 }: { count?: number }) {
   );
 }
 
-export function LoadingState({ label = "Loading player cards…" }: { label?: string }) {
+export function LoadingState({ label = "Loading cards…" }: { label?: string }) {
   return (
     <div className="surface-panel space-y-3" aria-busy="true" aria-live="polite">
       <div className="skeleton mx-auto h-3 w-40 rounded" />
