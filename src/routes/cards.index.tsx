@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowDownUp, X } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { PlayerCard } from "@/components/PlayerCard";
 import { FavoriteButton } from "@/components/FavoriteButton";
-
+import { CompareButton } from "@/components/CompareButton";
+import { CardFilters, SORT_KEYS, type CardFilterValues } from "@/components/CardFilters";
 import {
   CardGridSkeleton,
   ErrorState,
@@ -12,40 +13,45 @@ import {
   NoResultsState,
 } from "@/components/CardsState";
 import { playersSnapshotQueryOptions, formatDateTime } from "@/lib/playersQuery";
-import type { PlayerCardRecord, SortKey } from "@/lib/playerTypes";
+import { STAT_KEYS, type PlayerCardRecord, type SortKey } from "@/lib/playerTypes";
+import { STAT_LABELS } from "@/lib/statLabels";
 
 type Search = {
   q?: string | undefined;
   position?: string | undefined;
   nation?: string | undefined;
+  ovrMin?: string | undefined;
+  ovrMax?: string | undefined;
+  perk?: string | undefined;
+  pac?: string | undefined;
+  sho?: string | undefined;
+  pas?: string | undefined;
+  dri?: string | undefined;
+  def?: string | undefined;
+  phy?: string | undefined;
   sort?: SortKey | undefined;
   dir?: "asc" | "desc" | undefined;
 };
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "ovr", label: "OVR" },
-  { key: "playerName", label: "Player Name" },
-  { key: "pac", label: "PAC" },
-  { key: "sho", label: "SHO" },
-  { key: "pas", label: "PASS" },
-  { key: "dri", label: "DRIB" },
-  { key: "def", label: "DEF" },
-  { key: "phy", label: "PHY" },
-];
-
-
 const PAGE_SIZE = 60;
+
+const str = (v: unknown) => (typeof v === "string" && v !== "" ? v : undefined);
 
 export const Route = createFileRoute("/cards/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    q: typeof search["q"] === "string" && search["q"] !== "" ? search["q"] : undefined,
-    position:
-      typeof search["position"] === "string" && search["position"] !== ""
-        ? search["position"]
-        : undefined,
-    nation:
-      typeof search["nation"] === "string" && search["nation"] !== "" ? search["nation"] : undefined,
-    sort: SORT_OPTIONS.some((o) => o.key === search["sort"]) ? (search["sort"] as SortKey) : undefined,
+    q: str(search["q"]),
+    position: str(search["position"]),
+    nation: str(search["nation"]),
+    ovrMin: str(search["ovrMin"]),
+    ovrMax: str(search["ovrMax"]),
+    perk: str(search["perk"]),
+    pac: str(search["pac"]),
+    sho: str(search["sho"]),
+    pas: str(search["pas"]),
+    dri: str(search["dri"]),
+    def: str(search["def"]),
+    phy: str(search["phy"]),
+    sort: SORT_KEYS.includes(search["sort"] as SortKey) ? (search["sort"] as SortKey) : undefined,
     dir: search["dir"] === "asc" ? "asc" : undefined,
   }),
   head: () => ({
@@ -54,13 +60,15 @@ export const Route = createFileRoute("/cards/")({
       {
         name: "description",
         content:
-          "Search, filter and sort every UFL Mobile player card in the community database by OVR, position, nation and stats.",
+          "Search, filter and sort every UFL Mobile player card in the community database by OVR, position, nation, perk and stats.",
       },
       { property: "og:title", content: "Card Database — UFL Mobile Player Cards" },
       {
         property: "og:description",
         content: "Search, filter and sort every UFL Mobile player card in the community database.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CardsPage,
@@ -76,18 +84,73 @@ function compare(a: PlayerCardRecord, b: PlayerCardRecord, sort: SortKey) {
   return av - bv;
 }
 
+function num(value: string) {
+  const n = Number(value);
+  return value.trim() !== "" && Number.isFinite(n) ? n : null;
+}
+
 function CardsPage() {
-  const rawSearch = Route.useSearch();
-  const search = {
-    q: rawSearch.q ?? "",
-    position: rawSearch.position ?? "",
-    nation: rawSearch.nation ?? "",
-    sort: rawSearch.sort ?? ("ovr" as SortKey),
-    dir: rawSearch.dir ?? ("desc" as const),
-  };
+  const raw = Route.useSearch();
   const navigate = useNavigate({ from: "/cards/" });
   const [visible, setVisible] = useState(PAGE_SIZE);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { data, isPending, isError, error, refetch } = useQuery(playersSnapshotQueryOptions);
+
+  const values: CardFilterValues = {
+    q: raw.q ?? "",
+    position: raw.position ?? "",
+    nation: raw.nation ?? "",
+    ovrMin: raw.ovrMin ?? "",
+    ovrMax: raw.ovrMax ?? "",
+    perk: raw.perk ?? "",
+    pac: raw.pac ?? "",
+    sho: raw.sho ?? "",
+    pas: raw.pas ?? "",
+    dri: raw.dri ?? "",
+    def: raw.def ?? "",
+    phy: raw.phy ?? "",
+    sort: raw.sort ?? "ovr",
+    dir: raw.dir ?? "desc",
+  };
+
+  const [searchDraft, setSearchDraft] = useState(values.q);
+
+  const apply = (patch: Partial<CardFilterValues>) => {
+    setVisible(PAGE_SIZE);
+    const next = { ...values, ...patch };
+    navigate({
+      search: {
+        q: next.q || undefined,
+        position: next.position || undefined,
+        nation: next.nation || undefined,
+        ovrMin: next.ovrMin || undefined,
+        ovrMax: next.ovrMax || undefined,
+        perk: next.perk || undefined,
+        pac: next.pac || undefined,
+        sho: next.sho || undefined,
+        pas: next.pas || undefined,
+        dri: next.dri || undefined,
+        def: next.def || undefined,
+        phy: next.phy || undefined,
+        sort: next.sort === "ovr" ? undefined : next.sort,
+        dir: next.dir === "desc" ? undefined : next.dir,
+      },
+      replace: true,
+    });
+  };
+
+  // Debounced name search: typing stays instant, the URL follows shortly after.
+  useEffect(() => {
+    if (searchDraft === values.q) return;
+    const t = setTimeout(() => apply({ q: searchDraft }), 250);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchDraft]);
+
+  useEffect(() => {
+    setSearchDraft(values.q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values.q]);
 
   const players = data?.players ?? [];
 
@@ -105,172 +168,233 @@ function CardsPage() {
   }, [players]);
 
   const filtered = useMemo(() => {
-    const q = search.q.trim().toLowerCase();
-    const result = players.filter(
-      (p) =>
-        (q === "" || p.playerName.toLowerCase().includes(q)) &&
-        (search.position === "" || p.position === search.position) &&
-        (search.nation === "" || p.nation === search.nation),
+    const q = values.q.trim().toLowerCase();
+    const perk = values.perk.trim().toLowerCase();
+    const ovrMin = num(values.ovrMin);
+    const ovrMax = num(values.ovrMax);
+    const statMins = STAT_KEYS.map((key) => [key, num(values[key])] as const).filter(
+      (entry): entry is readonly [(typeof STAT_KEYS)[number], number] => entry[1] !== null,
     );
-    result.sort((a, b) => (search.dir === "asc" ? 1 : -1) * compare(a, b, search.sort));
-    return result;
-  }, [players, search.q, search.position, search.nation, search.sort, search.dir]);
 
-  const setSearch = (patch: Partial<Search>) => {
-    setVisible(PAGE_SIZE);
-    const next: Search = { ...search, ...patch };
-    navigate({
-      search: {
-        q: next.q || undefined,
-        position: next.position || undefined,
-        nation: next.nation || undefined,
-        sort: next.sort === "ovr" ? undefined : next.sort,
-        dir: next.dir === "desc" ? undefined : next.dir,
-      },
-      replace: true,
+    const result = players.filter((p) => {
+      if (q !== "" && !p.playerName.toLowerCase().includes(q)) return false;
+      if (values.position !== "" && p.position !== values.position) return false;
+      if (values.nation !== "" && p.nation !== values.nation) return false;
+      if (perk !== "" && !p.perk.toLowerCase().includes(perk)) return false;
+      if (ovrMin !== null && (p.ovr === null || p.ovr < ovrMin)) return false;
+      if (ovrMax !== null && (p.ovr === null || p.ovr > ovrMax)) return false;
+      for (const [key, min] of statMins) {
+        const v = p[key];
+        if (v === null || v < min) return false;
+      }
+      return true;
     });
+
+    result.sort((a, b) => (values.dir === "asc" ? 1 : -1) * compare(a, b, values.sort));
+    return result;
+  }, [
+    players,
+    values.q,
+    values.position,
+    values.nation,
+    values.perk,
+    values.ovrMin,
+    values.ovrMax,
+    values.pac,
+    values.sho,
+    values.pas,
+    values.dri,
+    values.def,
+    values.phy,
+    values.sort,
+    values.dir,
+  ]);
+
+  const activeFilters = useMemo(() => {
+    const list: { key: keyof CardFilterValues; label: string }[] = [];
+    if (values.q) list.push({ key: "q", label: `Name: ${values.q}` });
+    if (values.position) list.push({ key: "position", label: `Position: ${values.position}` });
+    if (values.nation) list.push({ key: "nation", label: `Nation: ${values.nation}` });
+    if (values.ovrMin) list.push({ key: "ovrMin", label: `OVR ≥ ${values.ovrMin}` });
+    if (values.ovrMax) list.push({ key: "ovrMax", label: `OVR ≤ ${values.ovrMax}` });
+    if (values.perk) list.push({ key: "perk", label: `Perk: ${values.perk}` });
+    for (const key of STAT_KEYS) {
+      if (values[key]) list.push({ key, label: `${STAT_LABELS[key]} ≥ ${values[key]}` });
+    }
+    return list;
+  }, [values]);
+
+  const clearFilters = () => {
+    setSearchDraft("");
+    apply({
+      q: "",
+      position: "",
+      nation: "",
+      ovrMin: "",
+      ovrMax: "",
+      perk: "",
+      pac: "",
+      sho: "",
+      pas: "",
+      dri: "",
+      def: "",
+      phy: "",
+    });
+    setDrawerOpen(false);
   };
 
-  const clearFilters = () => setSearch({ q: "", position: "", nation: "" });
-  const activeFilters = [
-    search.q ? { key: "q" as const, label: `Name: ${search.q}` } : null,
-    search.position ? { key: "position" as const, label: `Position: ${search.position}` } : null,
-    search.nation ? { key: "nation" as const, label: `Nation: ${search.nation}` } : null,
-  ].filter(Boolean) as { key: "q" | "position" | "nation"; label: string }[];
+  const total = data?.cardCount ?? 0;
+  const count =
+    activeFilters.length > 0
+      ? `${filtered.length.toLocaleString()} of ${total.toLocaleString()} cards`
+      : `${total.toLocaleString()} cards`;
+
+  const renderPanel = (idPrefix: string) => (
+    <CardFilters
+      idPrefix={idPrefix}
+      values={values}
+      positions={positions}
+      nations={nations}
+      searchDraft={searchDraft}
+      onSearchDraft={setSearchDraft}
+      onChange={apply}
+      onClear={clearFilters}
+      activeCount={activeFilters.length}
+    />
+  );
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-10">
       <header className="mb-4">
         <h1 className="text-2xl font-bold sm:text-3xl">Card Database</h1>
         <p className="mt-1 text-xs text-muted-foreground">
-          {data ? `${filtered.length} of ${data.cardCount} cards` : "Loading…"}
+          {data ? count : "Loading cards…"}
           {data ? ` · Last synced: ${formatDateTime(data.lastSuccessAt)}` : ""}
         </p>
       </header>
 
-      <section aria-label="Search and filters" className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        <input
-          type="search"
-          value={search.q}
-          onChange={(e) => setSearch({ q: e.target.value })}
-          placeholder="Search player name…"
-          aria-label="Search player name"
-          className="field focus-ring min-h-11 sm:col-span-2 lg:col-span-1"
-        />
-        <select
-          value={search.position}
-          onChange={(e) => setSearch({ position: e.target.value })}
-          aria-label="Filter by position"
-          className="field focus-ring min-h-11"
-        >
-          <option value="">All positions</option>
-          {positions.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-        <select
-          value={search.nation}
-          onChange={(e) => setSearch({ nation: e.target.value })}
-          aria-label="Filter by nation"
-          className="field focus-ring min-h-11"
-        >
-          <option value="">All nations</option>
-          {nations.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
-        <div className="flex gap-2">
-          <select
-            value={search.sort}
-            onChange={(e) => setSearch({ sort: e.target.value as SortKey })}
-            aria-label="Sort by"
-            className="field focus-ring min-h-11 flex-1"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.key} value={o.key}>
-                Sort: {o.label}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => setSearch({ dir: search.dir === "asc" ? "desc" : "asc" })}
-            className="field focus-ring flex min-h-11 items-center gap-1 px-3"
-            aria-label={`Sort direction: ${search.dir === "asc" ? "ascending" : "descending"}. Activate to switch.`}
-          >
-            <ArrowDownUp className="size-4" aria-hidden />
-            {search.dir === "asc" ? "ASC" : "DESC"}
-          </button>
-        </div>
-      </section>
+      <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <aside aria-label="Search and filters" className="hidden lg:block">
+          <div className="filter-panel">{renderPanel("side-")}</div>
+        </aside>
 
-      {activeFilters.length > 0 ? (
-        <div className="mb-5 flex flex-wrap items-center gap-2">
-          {activeFilters.map((f) => (
+        <div>
+          <div className="mb-4 flex items-center gap-2 lg:hidden">
             <button
-              key={f.key}
               type="button"
-              className="chip focus-ring"
-              onClick={() => setSearch({ [f.key]: "" } as Partial<Search>)}
-              aria-label={`Remove filter ${f.label}`}
+              className="btn-secondary focus-ring min-h-11 flex-1"
+              onClick={() => setDrawerOpen(true)}
+              aria-expanded={drawerOpen}
             >
-              {f.label}
-              <X className="size-3.5" aria-hidden />
+              <SlidersHorizontal className="mr-1.5 size-4" aria-hidden />
+              Search &amp; filters
+              {activeFilters.length > 0 ? (
+                <span className="filter-count">{activeFilters.length}</span>
+              ) : null}
             </button>
-          ))}
-          <button type="button" className="btn-secondary focus-ring" onClick={clearFilters}>
-            Clear filters
-          </button>
-        </div>
-      ) : null}
-
-      {isPending ? (
-        <CardGridSkeleton count={10} />
-      ) : isError ? (
-        <ErrorState message={(error as Error).message} onRetry={() => void refetch()} />
-      ) : players.length === 0 ? (
-        <EmptyState />
-      ) : filtered.length === 0 ? (
-        <NoResultsState onClear={clearFilters} />
-      ) : (
-        <>
-          <div className="card-grid">
-            {filtered.slice(0, visible).map((player) => (
-              <div key={player.id} className="relative">
-                <FavoriteButton
-                  cardId={player.id}
-                  name={player.playerName}
-                  className="card-action card-action-fav"
-                />
-                <Link
-                  to="/cards/$cardId"
-                  params={{ cardId: player.id }}
-                  className="focus-ring block rounded-xl"
-                  aria-label={`View card details for ${player.playerName || "player"}`}
-                >
-                  <PlayerCard player={player} />
-                </Link>
-              </div>
-            ))}
-
           </div>
-          {visible < filtered.length ? (
-            <div className="mt-8 flex justify-center">
-              <button
-                type="button"
-                className="btn-primary focus-ring"
-                onClick={() => setVisible((v) => v + PAGE_SIZE)}
-              >
-                Load more ({filtered.length - visible} left)
+
+          {activeFilters.length > 0 ? (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {activeFilters.map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  className="chip focus-ring"
+                  onClick={() => {
+                    if (f.key === "q") setSearchDraft("");
+                    apply({ [f.key]: "" } as Partial<CardFilterValues>);
+                  }}
+                  aria-label={`Remove filter ${f.label}`}
+                >
+                  {f.label}
+                  <X className="size-3.5" aria-hidden />
+                </button>
+              ))}
+              <button type="button" className="btn-secondary focus-ring" onClick={clearFilters}>
+                Clear filters
               </button>
             </div>
           ) : null}
-        </>
-      )}
+
+          {isPending ? (
+            <CardGridSkeleton count={10} />
+          ) : isError ? (
+            <ErrorState message={(error as Error).message} onRetry={() => void refetch()} />
+          ) : players.length === 0 ? (
+            <EmptyState />
+          ) : filtered.length === 0 ? (
+            <NoResultsState onClear={clearFilters} />
+          ) : (
+            <>
+              <p className="sr-only" aria-live="polite">
+                {filtered.length} cards found
+              </p>
+              <div className="card-grid">
+                {filtered.slice(0, visible).map((player) => (
+                  <div key={player.id} className="relative">
+                    <div className="card-action card-action-stack">
+                      <FavoriteButton cardId={player.id} name={player.playerName} />
+                      <CompareButton cardId={player.id} name={player.playerName} />
+                    </div>
+                    <Link
+                      to="/cards/$cardId"
+                      params={{ cardId: player.id }}
+                      className="focus-ring block rounded-xl"
+                      aria-label={`View card details for ${player.playerName || "player"}`}
+                    >
+                      <PlayerCard player={player} />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+              {visible < filtered.length ? (
+                <div className="mt-8 flex justify-center">
+                  <button
+                    type="button"
+                    className="btn-primary focus-ring"
+                    onClick={() => setVisible((v) => v + PAGE_SIZE)}
+                  >
+                    Load more ({filtered.length - visible} left)
+                  </button>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+      </div>
+
+      {drawerOpen ? (
+        <div className="filter-drawer-root lg:hidden" role="dialog" aria-modal="true" aria-label="Search and filters">
+          <button
+            type="button"
+            className="filter-drawer-backdrop"
+            aria-label="Close filters"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <div className="filter-drawer">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold">Search &amp; filters</h2>
+              <button
+                type="button"
+                className="icon-btn focus-ring"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close filters"
+              >
+                <X className="size-4" aria-hidden />
+              </button>
+            </div>
+            {renderPanel("drawer-")}
+            <button
+              type="button"
+              className="btn-primary focus-ring mt-4 w-full"
+              onClick={() => setDrawerOpen(false)}
+            >
+              Show {filtered.length} cards
+            </button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

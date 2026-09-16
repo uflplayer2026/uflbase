@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 export function CardGridSkeleton({ count = 10 }: { count?: number }) {
   return (
     <div className="card-grid" aria-busy="true" aria-live="polite">
-      <span className="sr-only">Loading player cards…</span>
+      <span className="sr-only">Loading cards…</span>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="skeleton-card">
           <div className="skeleton skeleton-media" />
@@ -19,7 +19,7 @@ export function CardGridSkeleton({ count = 10 }: { count?: number }) {
   );
 }
 
-export function LoadingState({ label = "Loading player cards…" }: { label?: string }) {
+export function LoadingState({ label = "Loading cards…" }: { label?: string }) {
   return (
     <div className="surface-panel space-y-3" aria-busy="true" aria-live="polite">
       <div className="skeleton mx-auto h-3 w-40 rounded" />
@@ -33,7 +33,7 @@ export function ErrorState({ message, onRetry }: { message?: string; onRetry?: (
   return (
     <div className="surface-panel flex flex-col items-center gap-3" role="alert">
       <AlertTriangle className="size-6 text-destructive" aria-hidden />
-      <h2 className="text-base font-semibold">Unable to load player cards. Please try again.</h2>
+      <h2 className="text-base font-semibold">Unable to load the card database</h2>
       {message ? <p className="max-w-md text-sm text-muted-foreground">{message}</p> : null}
       {onRetry ? (
         <button type="button" className="btn-primary focus-ring" onClick={onRetry}>
@@ -49,7 +49,7 @@ export function EmptyState() {
   return (
     <div className="surface-panel flex flex-col items-center gap-3">
       <Inbox className="size-6 text-muted-foreground" aria-hidden />
-      <h2 className="text-base font-semibold">No player cards found.</h2>
+      <h2 className="text-base font-semibold">No cards found</h2>
       <p className="max-w-md text-sm text-muted-foreground">
         The database is synced from the source spreadsheet. Once rows are added there, cards appear
         here after the next sync.
