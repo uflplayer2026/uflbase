@@ -1,48 +1,77 @@
 import { Link } from "@tanstack/react-router";
+import {
+  Home,
+  LayoutGrid,
+  Trophy,
+  Scale,
+  Heart,
+  BarChart3,
+  ScrollText,
+  Info,
+  Settings,
+  type LucideIcon,
+} from "lucide-react";
 
-const NAV = [
-  { to: "/", label: "Home" },
-  { to: "/cards", label: "Cards" },
-  { to: "/best", label: "Best" },
-  { to: "/compare", label: "Compare" },
-  { to: "/favorites", label: "Favorites" },
-  { to: "/stats", label: "Stats" },
-  { to: "/changelog", label: "What's New" },
-  { to: "/about", label: "About" },
-] as const;
+type NavItem = {
+  to: string;
+  label: string;
+  full: string;
+  icon: LucideIcon;
+  exact?: boolean;
+};
 
-
+const NAV: NavItem[] = [
+  { to: "/", label: "Home", full: "Home", icon: Home, exact: true },
+  { to: "/cards", label: "Cards", full: "Cards", icon: LayoutGrid },
+  { to: "/best", label: "Best", full: "Best players", icon: Trophy },
+  { to: "/compare", label: "Compare", full: "Compare cards", icon: Scale },
+  { to: "/favorites", label: "Favs", full: "Favorites", icon: Heart },
+  { to: "/stats", label: "Stats", full: "Statistics", icon: BarChart3 },
+  { to: "/changelog", label: "News", full: "What's new", icon: ScrollText },
+  { to: "/about", label: "About", full: "About", icon: Info },
+  { to: "/settings", label: "Admin", full: "Admin settings", icon: Settings },
+];
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-6">
-        <Link to="/" className="flex items-center gap-2 focus-ring rounded-md self-start" aria-label="UFL Mobile Card Database home">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:gap-4 sm:px-6 sm:py-2.5">
+        <Link
+          to="/"
+          className="focus-ring flex shrink-0 items-center gap-2 rounded-md"
+          aria-label="UFLBase home"
+        >
           <span className="brand-mark" aria-hidden>
             U
           </span>
-          <span className="text-sm font-bold uppercase tracking-[0.14em] sm:text-base">
-            UFL <span className="text-accent">Cards</span>
+          <span className="hidden text-sm font-bold uppercase tracking-[0.14em] sm:inline sm:text-base">
+            UFL<span className="text-accent">Base</span>
           </span>
         </Link>
-        <nav aria-label="Main" className="-mx-4 overflow-x-auto px-2 sm:mx-0 sm:overflow-visible sm:px-0">
-          <ul className="flex w-max items-center gap-1 sm:w-auto">
-            {NAV.map((item) => (
-              <li key={item.to}>
-                <Link
-                  to={item.to}
-                  className="nav-link focus-ring"
-                  activeOptions={{ exact: item.to === "/" }}
-                  activeProps={{ "data-active": "true" }}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
+
+        <nav aria-label="Main" className="min-w-0 flex-1">
+          <ul className="flex items-center justify-end gap-0.5 sm:gap-1">
+            {NAV.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    className="nav-link focus-ring"
+                    title={item.full}
+                    aria-label={item.full}
+                    activeOptions={{ exact: item.exact === true }}
+                    activeProps={{ "data-active": "true" }}
+                  >
+                    <Icon className="size-[1.05rem] shrink-0" aria-hidden />
+                    <span className="nav-link-label">{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>
-
     </header>
   );
 }
