@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -88,6 +88,26 @@ function num(value: string) {
   const n = Number(value);
   return value.trim() !== "" && Number.isFinite(n) ? n : null;
 }
+
+/** Memoized so filter/search/sync state changes never re-render visible cards needlessly. */
+const GridCard = memo(function GridCard({ player }: { player: PlayerCardRecord }) {
+  return (
+    <div className="relative">
+      <div className="card-action card-action-stack">
+        <FavoriteButton cardId={player.id} name={player.playerName} />
+        <CompareButton cardId={player.id} name={player.playerName} />
+      </div>
+      <Link
+        to="/cards/$cardId"
+        params={{ cardId: player.id }}
+        className="focus-ring block rounded-xl"
+        aria-label={`View card details for ${player.playerName || "player"}`}
+      >
+        <PlayerCard player={player} />
+      </Link>
+    </div>
+  );
+});
 
 function CardsPage() {
   const raw = Route.useSearch();
