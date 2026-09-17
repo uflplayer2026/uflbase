@@ -183,24 +183,30 @@ function CardsPage() {
       (entry): entry is readonly [(typeof STAT_KEYS)[number], number] => entry[1] !== null,
     );
 
-    const result = players.filter((p) => {
-      if (q !== "" && !p.playerName.toLowerCase().includes(q)) return false;
-      if (values.position !== "" && p.position !== values.position) return false;
-      if (values.nation !== "" && p.nation !== values.nation) return false;
-      if (perk !== "" && !p.perk.toLowerCase().includes(perk)) return false;
-      if (ovrMin !== null && (p.ovr === null || p.ovr < ovrMin)) return false;
-      if (ovrMax !== null && (p.ovr === null || p.ovr > ovrMax)) return false;
+    const result: PlayerCardRecord[] = [];
+    for (const entry of index) {
+      const p = entry.p;
+      if (q !== "" && !entry.name.includes(q)) continue;
+      if (values.position !== "" && p.position !== values.position) continue;
+      if (values.nation !== "" && p.nation !== values.nation) continue;
+      if (perk !== "" && !entry.perk.includes(perk)) continue;
+      if (ovrMin !== null && (p.ovr === null || p.ovr < ovrMin)) continue;
+      if (ovrMax !== null && (p.ovr === null || p.ovr > ovrMax)) continue;
+      let ok = true;
       for (const [key, min] of statMins) {
         const v = p[key];
-        if (v === null || v < min) return false;
+        if (v === null || v < min) {
+          ok = false;
+          break;
+        }
       }
-      return true;
-    });
+      if (ok) result.push(p);
+    }
 
     result.sort((a, b) => (values.dir === "asc" ? 1 : -1) * compare(a, b, values.sort));
     return result;
   }, [
-    players,
+    index,
     values.q,
     values.position,
     values.nation,
