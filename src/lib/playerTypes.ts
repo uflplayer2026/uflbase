@@ -22,6 +22,7 @@ export type PlayersSnapshot = {
   lastDurationMs: number | null;
   lastStatus: string | null;
   lastError: string | null;
+  lastErrorKind: string | null;
   syncing: boolean;
   nextSyncAt: string | null;
   intervalMinutes: number;

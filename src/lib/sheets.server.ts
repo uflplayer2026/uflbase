@@ -8,6 +8,7 @@ export type SyncOutcome = {
   message: string;
   durationMs: number;
   cardCount: number | null;
+  kind?: SheetsFailureKind;
 };
 
 function config() {
@@ -44,17 +45,98 @@ const num = (row: string[], i: number) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+export type SheetsFailureKind =
+  | "auth"
+  | "permission"
+  | "not_found"
+  | "bad_request"
+  | "rate_limit"
+  | "config"
+  | "provider"
+  | "unknown";
+
+export class SheetsError extends Error {
+  kind: SheetsFailureKind;
+  constructor(kind: SheetsFailureKind, message: string) {
+    super(message);
+    this.name = "SheetsError";
+    this.kind = kind;
+  }
+}
+
+/** Turns a raw Google/gateway failure into a specific, actionable operator message. */
+function classifyFailure(status: number, body: string): SheetsError {
+  const lower = body.toLowerCase();
+
+  if (status === 401) {
+    if (lower.includes("lovable_api_key") || lower.includes("not_registered")) {
+      return new SheetsError(
+        "config",
+        "The internal service key was rejected. The Google Sheets connection needs to be re-linked to this project.",
+      );
+    }
+    return new SheetsError(
+      "auth",
+      "Google Sheets authentication expired. Reconnect Google to continue synchronization.",
+    );
+  }
+  if (status === 403) {
+    if (lower.includes("insufficient") || lower.includes("scope")) {
+      return new SheetsError(
+        "permission",
+        "The Google connection is missing spreadsheet read permission. Reconnect Google and allow spreadsheet access.",
+      );
+    }
+    if (lower.includes("has not been used") || lower.includes("is disabled")) {
+      return new SheetsError(
+        "permission",
+        "The Google Sheets API is not enabled for the authorized Google project.",
+      );
+    }
+    return new SheetsError(
+      "permission",
+      "Access to this spreadsheet was denied. The connected Google account must have at least view access.",
+    );
+  }
+  if (status === 404) {
+    return new SheetsError(
+      "not_found",
+      "Spreadsheet not found. Check the configured spreadsheet ID.",
+    );
+  }
+  if (status === 400) {
+    return new SheetsError(
+      "bad_request",
+      lower.includes("unable to parse range")
+        ? "The configured sheet tab name is invalid or the tab was renamed."
+        : "Google rejected the request as invalid. Check the sheet tab name and range.",
+    );
+  }
+  if (status === 429) {
+    return new SheetsError("rate_limit", "Google Sheets rate limit reached. Try again shortly.");
+  }
+  if (status >= 500) {
+    return new SheetsError("provider", `Google Sheets is temporarily unavailable (${status}).`);
+  }
+  return new SheetsError("unknown", `Google Sheets returned an unexpected error (${status}).`);
+}
+
 /** Fetches the raw sheet rows and maps them onto the fixed 12-column model. */
 export async function fetchSheetPlayers(): Promise<PlayerCardRecord[]> {
   const c = config();
   if (!c.lovableKey || !c.connectionKey) {
-    throw new Error("Google Sheets connection is not configured.");
+    throw new SheetsError(
+      "config",
+      "The Google Sheets connection is not linked to this project. Connect Google Sheets first.",
+    );
   }
   if (!c.spreadsheetId) {
-    throw new Error("GOOGLE_SHEETS_SPREADSHEET_ID is not configured.");
+    throw new SheetsError("config", "No spreadsheet ID is configured for synchronization.");
   }
 
   const range = `${c.sheetName}!A2:L`;
+  console.log(`[sheets] read started (tab=${c.sheetName}, credentials=available)`);
+
   const res = await fetch(
     `${GATEWAY_URL}/spreadsheets/${c.spreadsheetId}/values/${range}?majorDimension=ROWS`,
     {
@@ -67,12 +149,15 @@ export async function fetchSheetPlayers(): Promise<PlayerCardRecord[]> {
 
   if (!res.ok) {
     const body = await res.text();
-    console.error(`Google Sheets read failed [${res.status}]: ${body}`);
-    throw new Error(`Google Sheets returned error ${res.status}.`);
+    const failure = classifyFailure(res.status, body);
+    // Never log credentials — status, classification and Google's own message only.
+    console.error(`[sheets] read failed status=${res.status} kind=${failure.kind}: ${body}`);
+    throw failure;
   }
 
   const json = (await res.json()) as { values?: string[][] };
   const rows = json.values ?? [];
+  console.log(`[sheets] read ok rows=${rows.length}`);
 
   return rows
     .map((row, index) => ({ row, index }))
@@ -144,6 +229,8 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
   } catch (err) {
     const durationMs = Date.now() - started;
     const message = err instanceof Error ? err.message : "Unknown sync error";
+    const kind = err instanceof SheetsError ? err.kind : "unknown";
+    console.error(`[sheets] sync failed trigger=${trigger} kind=${kind}`);
     // Keep the previous dataset — only the status fields change.
     await db
       .from("sheet_sync_state")
@@ -156,7 +243,7 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
       })
       .eq("id", ROW_ID);
 
-    return { status: "failed", message, durationMs, cardCount: null };
+    return { status: "failed", message, durationMs, cardCount: null, kind };
   }
 }
 
@@ -169,6 +256,7 @@ type StateRow = {
   last_status: string | null;
   last_error: string | null;
   sync_running: boolean;
+  updated_at: string | null;
 };
 
 async function readState(): Promise<StateRow | null> {
@@ -176,12 +264,40 @@ async function readState(): Promise<StateRow | null> {
   const { data, error } = await db
     .from("sheet_sync_state")
     .select(
-      "players, card_count, last_success_at, last_attempt_at, last_duration_ms, last_status, last_error, sync_running",
+      "players, card_count, last_success_at, last_attempt_at, last_duration_ms, last_status, last_error, sync_running, updated_at",
     )
     .eq("id", ROW_ID)
     .maybeSingle();
   if (error) throw error;
   return (data as StateRow | null) ?? null;
+}
+
+/** Recovers the failure category from the stored message so the UI can offer the right action. */
+export function failureKindFromMessage(message: string | null): SheetsFailureKind | null {
+  if (!message) return null;
+  const m = message.toLowerCase();
+  if (m.includes("authentication expired")) return "auth";
+  if (m.includes("permission") || m.includes("denied") || m.includes("not enabled"))
+    return "permission";
+  if (m.includes("not found")) return "not_found";
+  if (m.includes("rate limit")) return "rate_limit";
+  if (m.includes("not linked") || m.includes("no spreadsheet id") || m.includes("service key"))
+    return "config";
+  if (m.includes("temporarily unavailable")) return "provider";
+  return "unknown";
+}
+
+/** Credential problems never fix themselves — stop re-requesting Google until a cooldown passes. */
+const AUTH_COOLDOWN_MS = 10 * 60_000;
+const BLOCKING_KINDS: SheetsFailureKind[] = ["auth", "permission", "config", "not_found"];
+
+function inCooldown(state: StateRow | null): boolean {
+  if (!state || state.last_status !== "failed") return false;
+  const kind = failureKindFromMessage(state.last_error);
+  if (!kind || !BLOCKING_KINDS.includes(kind)) return false;
+  const at = state.updated_at ?? state.last_attempt_at;
+  if (!at) return false;
+  return Date.now() - new Date(at).getTime() < AUTH_COOLDOWN_MS;
 }
 
 function toSnapshot(state: StateRow | null, intervalMinutes: number): PlayersSnapshot {
@@ -194,6 +310,7 @@ function toSnapshot(state: StateRow | null, intervalMinutes: number): PlayersSna
     lastDurationMs: state?.last_duration_ms ?? null,
     lastStatus: state?.last_status ?? null,
     lastError: state?.last_error ?? null,
+    lastErrorKind: state?.last_status === "failed" ? failureKindFromMessage(state.last_error) : null,
     syncing: state?.sync_running ?? false,
     nextSyncAt: lastSuccessAt
       ? new Date(new Date(lastSuccessAt).getTime() + intervalMinutes * 60_000).toISOString()
@@ -212,14 +329,14 @@ export async function getSnapshot(): Promise<PlayersSnapshot> {
     !!state?.last_success_at &&
     Date.now() - new Date(state.last_success_at).getTime() > intervalMinutes * 60_000;
 
-  if (isEmpty || isStale) {
+  if ((isEmpty || isStale) && !inCooldown(state)) {
     await runSync(isEmpty ? "initial" : "auto");
     state = await readState();
   }
 
   const snapshot = toSnapshot(state, intervalMinutes);
   if (snapshot.players.length === 0 && snapshot.lastStatus === "failed") {
-    throw new Error("Unable to load player cards. Please try again.");
+    throw new Error(snapshot.lastError ?? "Unable to load player cards. Please try again.");
   }
   return snapshot;
 }

@@ -181,9 +181,28 @@ function SettingsPage() {
         <Row label="Cards cached" value={String(s.cardCount)} />
         <Row label="Currently running" value={s.syncing ? "Yes" : "No"} />
         {s.lastError ? (
-          <p className="mt-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-            Last error: {s.lastError}
-          </p>
+          <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            <p className="font-semibold">
+              {s.lastErrorKind === "auth"
+                ? "Google Sheets authentication expired"
+                : s.lastErrorKind === "permission"
+                  ? "Spreadsheet access denied"
+                  : s.lastErrorKind === "config"
+                    ? "Google Sheets connection is not configured"
+                    : s.lastErrorKind === "not_found"
+                      ? "Spreadsheet not found"
+                      : "Synchronization failed"}
+            </p>
+            <p className="mt-1">{s.lastError}</p>
+            {s.lastErrorKind === "auth" ||
+            s.lastErrorKind === "permission" ||
+            s.lastErrorKind === "config" ? (
+              <p className="mt-2 text-xs">
+                Reconnect the Google Sheets connection in the project's connection settings, then use
+                Sync Now. Cards on the site keep showing the last successfully synced data until then.
+              </p>
+            ) : null}
+          </div>
         ) : null}
         {notice ? <p className="mt-3 text-sm text-muted-foreground">{notice}</p> : null}
       </section>

@@ -18,6 +18,7 @@ export type SyncResult = {
   message: string;
   durationMs: number;
   cardCount: number | null;
+  kind?: string;
 };
 
 function emailFromClaims(claims: unknown): string {
