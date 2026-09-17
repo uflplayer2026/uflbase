@@ -167,6 +167,13 @@ function CardsPage() {
     };
   }, [players]);
 
+  // Lowercased search index built once per synced dataset — keeps text search
+  // fast even with tens of thousands of records.
+  const index = useMemo(
+    () => players.map((p) => ({ p, name: p.playerName.toLowerCase(), perk: p.perk.toLowerCase() })),
+    [players],
+  );
+
   const filtered = useMemo(() => {
     const q = values.q.trim().toLowerCase();
     const perk = values.perk.trim().toLowerCase();
