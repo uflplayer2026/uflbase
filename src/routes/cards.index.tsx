@@ -345,30 +345,17 @@ function CardsPage() {
               </p>
               <div className="card-grid">
                 {filtered.slice(0, visible).map((player) => (
-                  <div key={player.id} className="relative">
-                    <div className="card-action card-action-stack">
-                      <FavoriteButton cardId={player.id} name={player.playerName} />
-                      <CompareButton cardId={player.id} name={player.playerName} />
-                    </div>
-                    <Link
-                      to="/cards/$cardId"
-                      params={{ cardId: player.id }}
-                      className="focus-ring block rounded-xl"
-                      aria-label={`View card details for ${player.playerName || "player"}`}
-                    >
-                      <PlayerCard player={player} />
-                    </Link>
-                  </div>
+                  <GridCard key={player.id} player={player} />
                 ))}
               </div>
               {visible < filtered.length ? (
-                <div className="mt-8 flex justify-center">
+                <div ref={sentinelRef} className="mt-8 flex justify-center">
                   <button
                     type="button"
                     className="btn-primary focus-ring"
                     onClick={() => setVisible((v) => v + PAGE_SIZE)}
                   >
-                    Load more ({filtered.length - visible} left)
+                    Load more ({(filtered.length - visible).toLocaleString()} left)
                   </button>
                 </div>
               ) : null}
