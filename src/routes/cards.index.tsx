@@ -114,6 +114,22 @@ function CardsPage() {
   const navigate = useNavigate({ from: "/cards/" });
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Lazy loading: the next page is rendered only when the user scrolls near it.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setVisible((v) => v + PAGE_SIZE);
+      },
+      { rootMargin: "400px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  });
+
   const { data, isPending, isError, error, refetch } = useQuery(playersSnapshotQueryOptions);
 
   const values: CardFilterValues = {
