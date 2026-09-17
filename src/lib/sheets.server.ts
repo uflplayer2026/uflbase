@@ -228,6 +228,8 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
   } catch (err) {
     const durationMs = Date.now() - started;
     const message = err instanceof Error ? err.message : "Unknown sync error";
+    const kind = err instanceof SheetsError ? err.kind : "unknown";
+    console.error(`[sheets] sync failed trigger=${trigger} kind=${kind}`);
     // Keep the previous dataset — only the status fields change.
     await db
       .from("sheet_sync_state")
@@ -240,7 +242,7 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
       })
       .eq("id", ROW_ID);
 
-    return { status: "failed", message, durationMs, cardCount: null };
+    return { status: "failed", message, durationMs, cardCount: null, kind };
   }
 }
 
@@ -253,6 +255,7 @@ type StateRow = {
   last_status: string | null;
   last_error: string | null;
   sync_running: boolean;
+  updated_at: string | null;
 };
 
 async function readState(): Promise<StateRow | null> {
@@ -260,12 +263,40 @@ async function readState(): Promise<StateRow | null> {
   const { data, error } = await db
     .from("sheet_sync_state")
     .select(
-      "players, card_count, last_success_at, last_attempt_at, last_duration_ms, last_status, last_error, sync_running",
+      "players, card_count, last_success_at, last_attempt_at, last_duration_ms, last_status, last_error, sync_running, updated_at",
     )
     .eq("id", ROW_ID)
     .maybeSingle();
   if (error) throw error;
   return (data as StateRow | null) ?? null;
+}
+
+/** Recovers the failure category from the stored message so the UI can offer the right action. */
+export function failureKindFromMessage(message: string | null): SheetsFailureKind | null {
+  if (!message) return null;
+  const m = message.toLowerCase();
+  if (m.includes("authentication expired")) return "auth";
+  if (m.includes("permission") || m.includes("denied") || m.includes("not enabled"))
+    return "permission";
+  if (m.includes("not found")) return "not_found";
+  if (m.includes("rate limit")) return "rate_limit";
+  if (m.includes("not linked") || m.includes("no spreadsheet id") || m.includes("service key"))
+    return "config";
+  if (m.includes("temporarily unavailable")) return "provider";
+  return "unknown";
+}
+
+/** Credential problems never fix themselves — stop re-requesting Google until a cooldown passes. */
+const AUTH_COOLDOWN_MS = 10 * 60_000;
+const BLOCKING_KINDS: SheetsFailureKind[] = ["auth", "permission", "config", "not_found"];
+
+function inCooldown(state: StateRow | null): boolean {
+  if (!state || state.last_status !== "failed") return false;
+  const kind = failureKindFromMessage(state.last_error);
+  if (!kind || !BLOCKING_KINDS.includes(kind)) return false;
+  const at = state.updated_at ?? state.last_attempt_at;
+  if (!at) return false;
+  return Date.now() - new Date(at).getTime() < AUTH_COOLDOWN_MS;
 }
 
 function toSnapshot(state: StateRow | null, intervalMinutes: number): PlayersSnapshot {
@@ -278,6 +309,7 @@ function toSnapshot(state: StateRow | null, intervalMinutes: number): PlayersSna
     lastDurationMs: state?.last_duration_ms ?? null,
     lastStatus: state?.last_status ?? null,
     lastError: state?.last_error ?? null,
+    lastErrorKind: state?.last_status === "failed" ? failureKindFromMessage(state.last_error) : null,
     syncing: state?.sync_running ?? false,
     nextSyncAt: lastSuccessAt
       ? new Date(new Date(lastSuccessAt).getTime() + intervalMinutes * 60_000).toISOString()
@@ -296,14 +328,14 @@ export async function getSnapshot(): Promise<PlayersSnapshot> {
     !!state?.last_success_at &&
     Date.now() - new Date(state.last_success_at).getTime() > intervalMinutes * 60_000;
 
-  if (isEmpty || isStale) {
+  if ((isEmpty || isStale) && !inCooldown(state)) {
     await runSync(isEmpty ? "initial" : "auto");
     state = await readState();
   }
 
   const snapshot = toSnapshot(state, intervalMinutes);
   if (snapshot.players.length === 0 && snapshot.lastStatus === "failed") {
-    throw new Error("Unable to load player cards. Please try again.");
+    throw new Error(snapshot.lastError ?? "Unable to load player cards. Please try again.");
   }
   return snapshot;
 }
