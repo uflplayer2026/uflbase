@@ -259,6 +259,7 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
 type StateRow = {
   players: PlayerCardRecord[];
   card_count: number;
+  last_change_count: number | null;
   last_success_at: string | null;
   last_attempt_at: string | null;
   last_duration_ms: number | null;
@@ -273,7 +274,7 @@ async function readState(): Promise<StateRow | null> {
   const { data, error } = await db
     .from("sheet_sync_state")
     .select(
-      "players, card_count, last_success_at, last_attempt_at, last_duration_ms, last_status, last_error, sync_running, updated_at",
+      "players, card_count, last_change_count, last_success_at, last_attempt_at, last_duration_ms, last_status, last_error, sync_running, updated_at",
     )
     .eq("id", ROW_ID)
     .maybeSingle();
@@ -314,6 +315,7 @@ function toSnapshot(state: StateRow | null, intervalMinutes: number): PlayersSna
   return {
     players: state?.players ?? [],
     cardCount: state?.card_count ?? 0,
+    lastChangeCount: state?.last_change_count ?? 0,
     lastSuccessAt,
     lastAttemptAt: state?.last_attempt_at ?? null,
     lastDurationMs: state?.last_duration_ms ?? null,
