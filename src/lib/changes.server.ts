@@ -116,7 +116,7 @@ export async function reconcileRegistry(players: PlayerCardRecord[]): Promise<nu
   const knownNames = new Set(known.map((r) => norm(r.player_name)));
 
   const now = new Date().toISOString();
-  const inserts: Record<string, unknown>[] = [];
+  const inserts: TablesInsert<"card_registry">[] = [];
   const seen = new Set<string>();
 
   for (const p of players) {
