@@ -319,6 +319,11 @@ function CardsPage() {
         <p className="mt-1 text-xs text-muted-foreground">
           {data ? count : "Loading cards…"}
           {data ? ` · Last synced: ${formatDateTime(data.lastSuccessAt)}` : ""}
+          {data?.syncing
+            ? " · Syncing…"
+            : data && data.lastChangeCount > 0
+              ? ` · Synced — ${data.lastChangeCount} ${data.lastChangeCount === 1 ? "card" : "cards"} updated`
+              : ""}
         </p>
       </header>
 
