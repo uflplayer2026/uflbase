@@ -8,6 +8,7 @@ export type SyncOutcome = {
   message: string;
   durationMs: number;
   cardCount: number | null;
+  changeCount?: number;
   kind?: SheetsFailureKind;
 };
 
@@ -205,12 +206,16 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
 
   try {
     const players = await fetchSheetPlayers();
+    // Incremental: only new/changed records are written to the change registry.
+    const { reconcileRegistry } = await import("./changes.server");
+    const changeCount = await reconcileRegistry(players);
     const durationMs = Date.now() - started;
     await db
       .from("sheet_sync_state")
       .update({
         players,
         card_count: players.length,
+        last_change_count: changeCount,
         last_success_at: new Date().toISOString(),
         last_duration_ms: durationMs,
         last_status: "success",
@@ -222,9 +227,13 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
 
     return {
       status: "success",
-      message: `Synced ${players.length} cards (${trigger}).`,
+      message:
+        changeCount === 0
+          ? `Synced ${players.length} cards — no changes (${trigger}).`
+          : `Synced — ${changeCount} ${changeCount === 1 ? "card" : "cards"} updated (${trigger}).`,
       durationMs,
       cardCount: players.length,
+      changeCount,
     };
   } catch (err) {
     const durationMs = Date.now() - started;
@@ -250,6 +259,7 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
 type StateRow = {
   players: PlayerCardRecord[];
   card_count: number;
+  last_change_count: number | null;
   last_success_at: string | null;
   last_attempt_at: string | null;
   last_duration_ms: number | null;
@@ -264,7 +274,7 @@ async function readState(): Promise<StateRow | null> {
   const { data, error } = await db
     .from("sheet_sync_state")
     .select(
-      "players, card_count, last_success_at, last_attempt_at, last_duration_ms, last_status, last_error, sync_running, updated_at",
+      "players, card_count, last_change_count, last_success_at, last_attempt_at, last_duration_ms, last_status, last_error, sync_running, updated_at",
     )
     .eq("id", ROW_ID)
     .maybeSingle();
@@ -305,6 +315,7 @@ function toSnapshot(state: StateRow | null, intervalMinutes: number): PlayersSna
   return {
     players: state?.players ?? [],
     cardCount: state?.card_count ?? 0,
+    lastChangeCount: state?.last_change_count ?? 0,
     lastSuccessAt,
     lastAttemptAt: state?.last_attempt_at ?? null,
     lastDurationMs: state?.last_duration_ms ?? null,

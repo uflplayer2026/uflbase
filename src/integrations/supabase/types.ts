@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      card_registry: {
+        Row: {
+          card_image: string
+          changed_fields: Json
+          def: number | null
+          dri: number | null
+          fingerprint: string
+          first_seen_at: string
+          is_new_variant: boolean
+          last_changed_at: string | null
+          last_seen_at: string
+          nation: string
+          ovr: number | null
+          pac: number | null
+          pas: number | null
+          perk: string
+          phy: number | null
+          player_name: string
+          position: string
+          row_id: string
+          sho: number | null
+          variant_key: string
+        }
+        Insert: {
+          card_image?: string
+          changed_fields?: Json
+          def?: number | null
+          dri?: number | null
+          fingerprint: string
+          first_seen_at?: string
+          is_new_variant?: boolean
+          last_changed_at?: string | null
+          last_seen_at?: string
+          nation?: string
+          ovr?: number | null
+          pac?: number | null
+          pas?: number | null
+          perk?: string
+          phy?: number | null
+          player_name?: string
+          position?: string
+          row_id: string
+          sho?: number | null
+          variant_key: string
+        }
+        Update: {
+          card_image?: string
+          changed_fields?: Json
+          def?: number | null
+          dri?: number | null
+          fingerprint?: string
+          first_seen_at?: string
+          is_new_variant?: boolean
+          last_changed_at?: string | null
+          last_seen_at?: string
+          nation?: string
+          ovr?: number | null
+          pac?: number | null
+          pas?: number | null
+          perk?: string
+          phy?: number | null
+          player_name?: string
+          position?: string
+          row_id?: string
+          sho?: number | null
+          variant_key?: string
+        }
+        Relationships: []
+      }
       changelog_entries: {
         Row: {
           categories: Json
@@ -52,6 +121,7 @@ export type Database = {
           card_count: number
           id: string
           last_attempt_at: string | null
+          last_change_count: number
           last_duration_ms: number | null
           last_error: string | null
           last_status: string | null
@@ -65,6 +135,7 @@ export type Database = {
           card_count?: number
           id: string
           last_attempt_at?: string | null
+          last_change_count?: number
           last_duration_ms?: number | null
           last_error?: string | null
           last_status?: string | null
@@ -78,6 +149,7 @@ export type Database = {
           card_count?: number
           id?: string
           last_attempt_at?: string | null
+          last_change_count?: number
           last_duration_ms?: number | null
           last_error?: string | null
           last_status?: string | null

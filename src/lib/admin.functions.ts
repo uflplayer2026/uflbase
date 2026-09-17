@@ -18,6 +18,7 @@ export type SyncResult = {
   message: string;
   durationMs: number;
   cardCount: number | null;
+  changeCount?: number;
   kind?: string;
 };
 

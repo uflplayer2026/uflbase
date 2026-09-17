@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { SlidersHorizontal, X } from "lucide-react";
@@ -89,11 +89,47 @@ function num(value: string) {
   return value.trim() !== "" && Number.isFinite(n) ? n : null;
 }
 
+/** Memoized so filter/search/sync state changes never re-render visible cards needlessly. */
+const GridCard = memo(function GridCard({ player }: { player: PlayerCardRecord }) {
+  return (
+    <div className="relative">
+      <div className="card-action card-action-stack">
+        <FavoriteButton cardId={player.id} name={player.playerName} />
+        <CompareButton cardId={player.id} name={player.playerName} />
+      </div>
+      <Link
+        to="/cards/$cardId"
+        params={{ cardId: player.id }}
+        className="focus-ring block rounded-xl"
+        aria-label={`View card details for ${player.playerName || "player"}`}
+      >
+        <PlayerCard player={player} />
+      </Link>
+    </div>
+  );
+});
+
 function CardsPage() {
   const raw = Route.useSearch();
   const navigate = useNavigate({ from: "/cards/" });
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Lazy loading: the next page is rendered only when the user scrolls near it.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setVisible((v) => v + PAGE_SIZE);
+      },
+      { rootMargin: "400px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  });
+
   const { data, isPending, isError, error, refetch } = useQuery(playersSnapshotQueryOptions);
 
   const values: CardFilterValues = {
@@ -167,6 +203,13 @@ function CardsPage() {
     };
   }, [players]);
 
+  // Lowercased search index built once per synced dataset — keeps text search
+  // fast even with tens of thousands of records.
+  const index = useMemo(
+    () => players.map((p) => ({ p, name: p.playerName.toLowerCase(), perk: p.perk.toLowerCase() })),
+    [players],
+  );
+
   const filtered = useMemo(() => {
     const q = values.q.trim().toLowerCase();
     const perk = values.perk.trim().toLowerCase();
@@ -176,24 +219,30 @@ function CardsPage() {
       (entry): entry is readonly [(typeof STAT_KEYS)[number], number] => entry[1] !== null,
     );
 
-    const result = players.filter((p) => {
-      if (q !== "" && !p.playerName.toLowerCase().includes(q)) return false;
-      if (values.position !== "" && p.position !== values.position) return false;
-      if (values.nation !== "" && p.nation !== values.nation) return false;
-      if (perk !== "" && !p.perk.toLowerCase().includes(perk)) return false;
-      if (ovrMin !== null && (p.ovr === null || p.ovr < ovrMin)) return false;
-      if (ovrMax !== null && (p.ovr === null || p.ovr > ovrMax)) return false;
+    const result: PlayerCardRecord[] = [];
+    for (const entry of index) {
+      const p = entry.p;
+      if (q !== "" && !entry.name.includes(q)) continue;
+      if (values.position !== "" && p.position !== values.position) continue;
+      if (values.nation !== "" && p.nation !== values.nation) continue;
+      if (perk !== "" && !entry.perk.includes(perk)) continue;
+      if (ovrMin !== null && (p.ovr === null || p.ovr < ovrMin)) continue;
+      if (ovrMax !== null && (p.ovr === null || p.ovr > ovrMax)) continue;
+      let ok = true;
       for (const [key, min] of statMins) {
         const v = p[key];
-        if (v === null || v < min) return false;
+        if (v === null || v < min) {
+          ok = false;
+          break;
+        }
       }
-      return true;
-    });
+      if (ok) result.push(p);
+    }
 
     result.sort((a, b) => (values.dir === "asc" ? 1 : -1) * compare(a, b, values.sort));
     return result;
   }, [
-    players,
+    index,
     values.q,
     values.position,
     values.nation,
@@ -270,6 +319,11 @@ function CardsPage() {
         <p className="mt-1 text-xs text-muted-foreground">
           {data ? count : "Loading cards…"}
           {data ? ` · Last synced: ${formatDateTime(data.lastSuccessAt)}` : ""}
+          {data?.syncing
+            ? " · Syncing…"
+            : data && data.lastChangeCount > 0
+              ? ` · Synced — ${data.lastChangeCount} ${data.lastChangeCount === 1 ? "card" : "cards"} updated`
+              : ""}
         </p>
       </header>
 
@@ -332,30 +386,17 @@ function CardsPage() {
               </p>
               <div className="card-grid">
                 {filtered.slice(0, visible).map((player) => (
-                  <div key={player.id} className="relative">
-                    <div className="card-action card-action-stack">
-                      <FavoriteButton cardId={player.id} name={player.playerName} />
-                      <CompareButton cardId={player.id} name={player.playerName} />
-                    </div>
-                    <Link
-                      to="/cards/$cardId"
-                      params={{ cardId: player.id }}
-                      className="focus-ring block rounded-xl"
-                      aria-label={`View card details for ${player.playerName || "player"}`}
-                    >
-                      <PlayerCard player={player} />
-                    </Link>
-                  </div>
+                  <GridCard key={player.id} player={player} />
                 ))}
               </div>
               {visible < filtered.length ? (
-                <div className="mt-8 flex justify-center">
+                <div ref={sentinelRef} className="mt-8 flex justify-center">
                   <button
                     type="button"
                     className="btn-primary focus-ring"
                     onClick={() => setVisible((v) => v + PAGE_SIZE)}
                   >
-                    Load more ({filtered.length - visible} left)
+                    Load more ({(filtered.length - visible).toLocaleString()} left)
                   </button>
                 </div>
               ) : null}

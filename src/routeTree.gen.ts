@@ -17,6 +17,7 @@ import { Route as BestRouteImport } from './routes/best'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as RecentRouteImport } from './routes/recent'
 import { Route as StatsRouteImport } from './routes/stats'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as CardsIndexRouteImport } from './routes/cards.index'
@@ -62,6 +63,11 @@ const FavoritesRoute = FavoritesRouteImport.update({
   path: '/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecentRoute = RecentRouteImport.update({
+  id: '/recent',
+  path: '/recent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StatsRoute = StatsRouteImport.update({
   id: '/stats',
   path: '/stats',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/favorites': typeof FavoritesRoute
+  '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/favorites': typeof FavoritesRoute
+  '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/favorites': typeof FavoritesRoute
+  '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/compare'
     | '/favorites'
+    | '/recent'
     | '/stats'
     | '/settings'
     | '/cards/$cardId'
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/compare'
     | '/favorites'
+    | '/recent'
     | '/stats'
     | '/settings'
     | '/cards/$cardId'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/compare'
     | '/favorites'
+    | '/recent'
     | '/stats'
     | '/_authenticated/settings'
     | '/cards/$cardId'
@@ -187,6 +199,7 @@ export interface RootRouteChildren {
   ChangelogRoute: typeof ChangelogRoute
   CompareRoute: typeof CompareRoute
   FavoritesRoute: typeof FavoritesRoute
+  RecentRoute: typeof RecentRoute
   StatsRoute: typeof StatsRoute
   CardsCardIdRoute: typeof CardsCardIdRoute
   CardsIndexRoute: typeof CardsIndexRoute
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FavoritesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recent': {
+      id: '/recent'
+      path: '/recent'
+      fullPath: '/recent'
+      preLoaderRoute: typeof RecentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stats': {
       id: '/stats'
       path: '/stats'
@@ -309,6 +329,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChangelogRoute: ChangelogRoute,
   CompareRoute: CompareRoute,
   FavoritesRoute: FavoritesRoute,
+  RecentRoute: RecentRoute,
   StatsRoute: StatsRoute,
   CardsCardIdRoute: CardsCardIdRoute,
   CardsIndexRoute: CardsIndexRoute,
