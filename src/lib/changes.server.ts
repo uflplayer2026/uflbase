@@ -1,4 +1,5 @@
 import type { PlayerCardRecord } from "./playerTypes";
+import type { TablesInsert } from "@/integrations/supabase/types";
 import type { CardChange, ChangeView } from "./changes.functions";
 import { fingerprint, isRealRecord, variantKey, TRACKED_FIELDS } from "./cardIdentity";
 
