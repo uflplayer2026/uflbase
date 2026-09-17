@@ -8,6 +8,7 @@ export type SyncOutcome = {
   message: string;
   durationMs: number;
   cardCount: number | null;
+  changeCount?: number;
   kind?: SheetsFailureKind;
 };
 
