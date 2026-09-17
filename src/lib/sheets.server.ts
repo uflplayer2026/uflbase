@@ -205,12 +205,16 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
 
   try {
     const players = await fetchSheetPlayers();
+    // Incremental: only new/changed records are written to the change registry.
+    const { reconcileRegistry } = await import("./changes.server");
+    const changeCount = await reconcileRegistry(players);
     const durationMs = Date.now() - started;
     await db
       .from("sheet_sync_state")
       .update({
         players,
         card_count: players.length,
+        last_change_count: changeCount,
         last_success_at: new Date().toISOString(),
         last_duration_ms: durationMs,
         last_status: "success",
@@ -222,9 +226,13 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
 
     return {
       status: "success",
-      message: `Synced ${players.length} cards (${trigger}).`,
+      message:
+        changeCount === 0
+          ? `Synced ${players.length} cards — no changes (${trigger}).`
+          : `Synced — ${changeCount} ${changeCount === 1 ? "card" : "cards"} updated (${trigger}).`,
       durationMs,
       cardCount: players.length,
+      changeCount,
     };
   } catch (err) {
     const durationMs = Date.now() - started;
