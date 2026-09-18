@@ -23,6 +23,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as CardsIndexRouteImport } from './routes/cards.index'
 import { Route as CardsCardIdRouteImport } from './routes/cards.$cardId'
 import { Route as ApiPublicSyncCronRouteImport } from './routes/api/public/sync-cron'
+import { Route as ApiPublicAssetSplatRouteImport } from './routes/api/public/asset.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -93,6 +94,11 @@ const ApiPublicSyncCronRoute = ApiPublicSyncCronRouteImport.update({
   path: '/api/public/sync-cron',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAssetSplatRoute = ApiPublicAssetSplatRouteImport.update({
+  id: '/api/public/asset/$',
+  path: '/api/public/asset/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
+  '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
+  '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
+  '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/cards/$cardId'
     | '/cards/'
     | '/api/public/sync-cron'
+    | '/api/public/asset/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/cards/$cardId'
     | '/cards'
     | '/api/public/sync-cron'
+    | '/api/public/asset/$'
   id:
     | '__root__'
     | '/'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/cards/$cardId'
     | '/cards/'
     | '/api/public/sync-cron'
+    | '/api/public/asset/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   CardsCardIdRoute: typeof CardsCardIdRoute
   CardsIndexRoute: typeof CardsIndexRoute
   ApiPublicSyncCronRoute: typeof ApiPublicSyncCronRoute
+  ApiPublicAssetSplatRoute: typeof ApiPublicAssetSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -306,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSyncCronRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/asset/$': {
+      id: '/api/public/asset/$'
+      path: '/api/public/asset/$'
+      fullPath: '/api/public/asset/$'
+      preLoaderRoute: typeof ApiPublicAssetSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -334,6 +354,7 @@ const rootRouteChildren: RootRouteChildren = {
   CardsCardIdRoute: CardsCardIdRoute,
   CardsIndexRoute: CardsIndexRoute,
   ApiPublicSyncCronRoute: ApiPublicSyncCronRoute,
+  ApiPublicAssetSplatRoute: ApiPublicAssetSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
