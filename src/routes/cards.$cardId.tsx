@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ExternalLink } from "lucide-react";
 import { PlayerCard } from "@/components/PlayerCard";
 import { LoadingState, ErrorState } from "@/components/CardsState";
 import { playersSnapshotQueryOptions } from "@/lib/playersQuery";
@@ -33,6 +33,12 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="font-semibold">{value}</span>
     </div>
   );
+}
+
+/** A Drive Link is only actionable when it is a usable web URL. */
+function validDriveLink(value: string): string | null {
+  const v = value.trim();
+  return /^https?:\/\/\S+$/i.test(v) ? v : null;
 }
 
 function CardDetail() {
