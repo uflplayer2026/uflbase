@@ -2,11 +2,14 @@
 
 export type ProbeResult = { mime: string; width: number | null; height: number | null };
 
+/** Bounds-safe byte read — uploaded and remote bytes are untrusted and may be truncated. */
+const at = (b: Uint8Array, i: number): number => b[i] ?? 0;
+
 const startsWith = (b: Uint8Array, sig: number[], offset = 0) =>
-  sig.every((v, i) => b[offset + i] === v);
+  sig.every((v, i) => at(b, offset + i) === v);
 
 function readUint32BE(b: Uint8Array, o: number) {
-  return ((b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3]) >>> 0;
+  return ((at(b, o) << 24) | (at(b, o + 1) << 16) | (at(b, o + 2) << 8) | at(b, o + 3)) >>> 0;
 }
 
 function pngSize(b: Uint8Array) {
@@ -14,22 +17,29 @@ function pngSize(b: Uint8Array) {
 }
 
 function gifSize(b: Uint8Array) {
-  return { width: b[6] | (b[7] << 8), height: b[8] | (b[9] << 8) };
+  return {
+    width: at(b, 6) | (at(b, 7) << 8),
+    height: at(b, 8) | (at(b, 9) << 8),
+  };
 }
 
 function webpSize(b: Uint8Array): { width: number | null; height: number | null } {
-  const fourcc = String.fromCharCode(b[12], b[13], b[14], b[15]);
+  const fourcc = String.fromCharCode(at(b, 12), at(b, 13), at(b, 14), at(b, 15));
   if (fourcc === "VP8X") {
     return {
-      width: 1 + (b[24] | (b[25] << 8) | (b[26] << 16)),
-      height: 1 + (b[27] | (b[28] << 8) | (b[29] << 16)),
+      width: 1 + (at(b, 24) | (at(b, 25) << 8) | (at(b, 26) << 16)),
+      height: 1 + (at(b, 27) | (at(b, 28) << 8) | (at(b, 29) << 16)),
     };
   }
   if (fourcc === "VP8 ") {
-    return { width: (b[26] | (b[27] << 8)) & 0x3fff, height: (b[28] | (b[29] << 8)) & 0x3fff };
+    return {
+      width: (at(b, 26) | (at(b, 27) << 8)) & 0x3fff,
+      height: (at(b, 28) | (at(b, 29) << 8)) & 0x3fff,
+    };
   }
   if (fourcc === "VP8L") {
-    const bits = b[21] | (b[22] << 8) | (b[23] << 16) | (b[24] << 24);
+    const bits =
+      at(b, 21) | (at(b, 22) << 8) | (at(b, 23) << 16) | (at(b, 24) << 24);
     return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
   }
   return { width: null, height: null };
@@ -38,15 +48,18 @@ function webpSize(b: Uint8Array): { width: number | null; height: number | null 
 function jpegSize(b: Uint8Array): { width: number | null; height: number | null } {
   let i = 2;
   while (i + 9 < b.length) {
-    if (b[i] !== 0xff) {
+    if (at(b, i) !== 0xff) {
       i += 1;
       continue;
     }
-    const marker = b[i + 1];
-    const length = (b[i + 2] << 8) | b[i + 3];
-    // SOF0..SOF15 excluding DHT/JPG/DAC markers
+    const marker = at(b, i + 1);
+    const length = (at(b, i + 2) << 8) | at(b, i + 3);
+    // SOF0..SOF15, excluding the DHT/JPG/DAC markers in that range.
     if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
-      return { height: (b[i + 5] << 8) | b[i + 6], width: (b[i + 7] << 8) | b[i + 8] };
+      return {
+        height: (at(b, i + 5) << 8) | at(b, i + 6),
+        width: (at(b, i + 7) << 8) | at(b, i + 8),
+      };
     }
     if (length <= 0) break;
     i += 2 + length;
@@ -101,8 +114,8 @@ export function probeImage(bytes: Uint8Array, declaredMime = ""): ProbeResult {
     const h = /height\s*=\s*"(\d+(?:\.\d+)?)/i.exec(full);
     return {
       mime: "image/svg+xml",
-      width: w ? Math.round(Number(w[1])) : null,
-      height: h ? Math.round(Number(h[1])) : null,
+      width: w?.[1] ? Math.round(Number(w[1])) : null,
+      height: h?.[1] ? Math.round(Number(h[1])) : null,
     };
   }
 

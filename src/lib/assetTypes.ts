@@ -70,7 +70,8 @@ export const UPLOAD_ACCEPT = ".png,.jpg,.jpeg,.webp,.gif,.svg";
 export const MAX_ASSET_BYTES = 15 * 1024 * 1024;
 
 export function isSupportedMime(mime: string): boolean {
-  return (SUPPORTED_MIME_TYPES as readonly string[]).includes(mime.split(";")[0].trim().toLowerCase());
+  const base = (mime.split(";")[0] ?? "").trim().toLowerCase();
+  return (SUPPORTED_MIME_TYPES as readonly string[]).includes(base);
 }
 
 export function isHttpUrl(value: string): boolean {
