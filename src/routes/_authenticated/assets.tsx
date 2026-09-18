@@ -264,7 +264,7 @@ function LibraryTab({
           <label className="block text-sm">
             <span className="filter-label">Asset type</span>
             <select
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               value={uploadType}
               onChange={(e) => setUploadType(e.target.value as AssetType)}
             >
@@ -281,7 +281,7 @@ function LibraryTab({
               type="file"
               multiple
               accept={UPLOAD_ACCEPT}
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               onChange={(e) => uploadFiles(e.target.files)}
             />
           </label>
@@ -291,7 +291,7 @@ function LibraryTab({
           <label className="block text-sm">
             <span className="filter-label">Image URL</span>
             <input
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               placeholder="https://example.com/card.png"
               value={urlValue}
               onChange={(e) => setUrlValue(e.target.value)}
@@ -300,7 +300,7 @@ function LibraryTab({
           <label className="block text-sm">
             <span className="filter-label">Mode</span>
             <select
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               value={urlMode}
               onChange={(e) => setUrlMode(e.target.value as "external" | "import")}
             >
@@ -316,7 +316,7 @@ function LibraryTab({
         <label className="mt-3 block text-sm">
           <span className="filter-label">Bulk URL import (one per line)</span>
           <textarea
-            className="input mt-1 h-24 w-full"
+            className="field focus-ring mt-1 h-24 w-full"
             value={bulkUrls}
             onChange={(e) => setBulkUrls(e.target.value)}
             placeholder={"https://example.com/messi.png\nhttps://example.com/mbappe.webp"}
@@ -340,7 +340,7 @@ function LibraryTab({
           <label className="block text-sm">
             <span className="filter-label">Search</span>
             <input
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Asset name"
@@ -349,7 +349,7 @@ function LibraryTab({
           <label className="block text-sm">
             <span className="filter-label">Filter by type</span>
             <select
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as AssetType | "")}
             >
@@ -535,7 +535,7 @@ function CardImagesTab({
             type="file"
             multiple
             accept={UPLOAD_ACCEPT}
-            className="input mt-1 w-full"
+            className="field focus-ring mt-1 min-h-11 w-full"
             onChange={(e) => handleFiles(e.target.files)}
           />
         </label>
@@ -736,7 +736,7 @@ function BackgroundsTab({
           <label className="block text-sm">
             <span className="filter-label">Position</span>
             <select
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               value={position}
               onChange={(e) => setPosition(e.target.value)}
             >
@@ -751,7 +751,7 @@ function BackgroundsTab({
           <label className="block text-sm">
             <span className="filter-label">Player name contains</span>
             <input
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               value={nameQuery}
               onChange={(e) => setNameQuery(e.target.value)}
             />
@@ -759,7 +759,7 @@ function BackgroundsTab({
           <label className="block text-sm">
             <span className="filter-label">Scope</span>
             <select
-              className="input mt-1 w-full"
+              className="field focus-ring mt-1 min-h-11 w-full"
               value={scope}
               onChange={(e) => setScope(e.target.value as "filtered" | "missing")}
             >
