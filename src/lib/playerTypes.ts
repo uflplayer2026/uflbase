@@ -12,6 +12,8 @@ export type PlayerCardRecord = {
   phy: number | null;
   perk: string;
   cardImage: string;
+  /** Read-only source link to the original Drive file. Never part of card identity. */
+  driveLink: string;
 };
 
 export type PlayersSnapshot = {
