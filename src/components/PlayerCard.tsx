@@ -3,7 +3,7 @@ import { ImageOff } from "lucide-react";
 import type { PlayerCardRecord } from "@/lib/playerTypes";
 import { STAT_KEYS } from "@/lib/playerTypes";
 import { STAT_LABELS } from "@/lib/statLabels";
-
+import { useCardAssetMap, resolveCardArt } from "@/lib/assetsQuery";
 
 function StatValue({ value }: { value: number | null }) {
   return <span className="stat-value">{value === null ? "—" : value}</span>;
@@ -12,18 +12,32 @@ function StatValue({ value }: { value: number | null }) {
 /** The single reusable card presentation used on every page. */
 function PlayerCardBase({ player }: { player: PlayerCardRecord }) {
   const name = player.playerName || "Unknown player";
+  // Card image and background are separate assets and are resolved separately.
+  const art = resolveCardArt(player, useCardAssetMap());
+
   return (
     <article className="player-card">
       <div className="player-card-media">
-        {player.cardImage ? (
+        {art.backgroundUrl ? (
           <img
-            src={player.cardImage}
+            src={art.backgroundUrl}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            decoding="async"
+            className="player-card-background"
+          />
+        ) : null}
+
+        {art.imageUrl ? (
+          <img
+            src={art.imageUrl}
             alt={`${name} — ${player.position || "player"} card${
               player.ovr === null ? "" : `, ${player.ovr} overall`
             }`}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover"
+            className="relative h-full w-full object-cover"
           />
         ) : (
           <div className="player-card-placeholder">

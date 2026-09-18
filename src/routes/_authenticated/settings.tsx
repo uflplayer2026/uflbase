@@ -126,6 +126,9 @@ function SettingsPage() {
           <p className="mt-1 text-xs text-muted-foreground">Signed in as {data.adminEmail}</p>
         </div>
         <div className="flex gap-2">
+          <Link to="/assets" className="btn-secondary">
+            Asset manager
+          </Link>
           <Link to="/cards" className="btn-secondary">
             View cards
           </Link>

@@ -19,10 +19,12 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as RecentRouteImport } from './routes/recent'
 import { Route as StatsRouteImport } from './routes/stats'
+import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated/assets'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as CardsIndexRouteImport } from './routes/cards.index'
 import { Route as CardsCardIdRouteImport } from './routes/cards.$cardId'
 import { Route as ApiPublicSyncCronRouteImport } from './routes/api/public/sync-cron'
+import { Route as ApiPublicAssetSplatRouteImport } from './routes/api/public/asset.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -73,6 +75,11 @@ const StatsRoute = StatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAssetsRoute = AuthenticatedAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -93,6 +100,11 @@ const ApiPublicSyncCronRoute = ApiPublicSyncCronRouteImport.update({
   path: '/api/public/sync-cron',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAssetSplatRoute = ApiPublicAssetSplatRouteImport.update({
+  id: '/api/public/asset/$',
+  path: '/api/public/asset/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -104,10 +116,12 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
+  '/assets': typeof AuthenticatedAssetsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
+  '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -119,10 +133,12 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
+  '/assets': typeof AuthenticatedAssetsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
+  '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -136,10 +152,12 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
+  '/_authenticated/assets': typeof AuthenticatedAssetsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
+  '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -153,10 +171,12 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/recent'
     | '/stats'
+    | '/assets'
     | '/settings'
     | '/cards/$cardId'
     | '/cards/'
     | '/api/public/sync-cron'
+    | '/api/public/asset/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -168,10 +188,12 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/recent'
     | '/stats'
+    | '/assets'
     | '/settings'
     | '/cards/$cardId'
     | '/cards'
     | '/api/public/sync-cron'
+    | '/api/public/asset/$'
   id:
     | '__root__'
     | '/'
@@ -184,10 +206,12 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/recent'
     | '/stats'
+    | '/_authenticated/assets'
     | '/_authenticated/settings'
     | '/cards/$cardId'
     | '/cards/'
     | '/api/public/sync-cron'
+    | '/api/public/asset/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -204,6 +228,7 @@ export interface RootRouteChildren {
   CardsCardIdRoute: typeof CardsCardIdRoute
   CardsIndexRoute: typeof CardsIndexRoute
   ApiPublicSyncCronRoute: typeof ApiPublicSyncCronRoute
+  ApiPublicAssetSplatRoute: typeof ApiPublicAssetSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -278,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/assets': {
+      id: '/_authenticated/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof AuthenticatedAssetsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -306,14 +338,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSyncCronRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/asset/$': {
+      id: '/api/public/asset/$'
+      path: '/api/public/asset/$'
+      fullPath: '/api/public/asset/$'
+      preLoaderRoute: typeof ApiPublicAssetSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAssetsRoute: typeof AuthenticatedAssetsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAssetsRoute: AuthenticatedAssetsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
@@ -334,6 +375,7 @@ const rootRouteChildren: RootRouteChildren = {
   CardsCardIdRoute: CardsCardIdRoute,
   CardsIndexRoute: CardsIndexRoute,
   ApiPublicSyncCronRoute: ApiPublicSyncCronRoute,
+  ApiPublicAssetSplatRoute: ApiPublicAssetSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

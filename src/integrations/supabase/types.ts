@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      assets: {
+        Row: {
+          asset_type: string
+          created_at: string
+          file_size: number | null
+          height: number | null
+          id: string
+          mime_type: string
+          name: string
+          source: string
+          storage_path: string | null
+          updated_at: string
+          url: string
+          width: number | null
+        }
+        Insert: {
+          asset_type?: string
+          created_at?: string
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          mime_type?: string
+          name: string
+          source?: string
+          storage_path?: string | null
+          updated_at?: string
+          url: string
+          width?: number | null
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          file_size?: number | null
+          height?: number | null
+          id?: string
+          mime_type?: string
+          name?: string
+          source?: string
+          storage_path?: string | null
+          updated_at?: string
+          url?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
+      card_asset_links: {
+        Row: {
+          background_asset_id: string | null
+          card_image_asset_id: string | null
+          updated_at: string
+          variant_key: string
+        }
+        Insert: {
+          background_asset_id?: string | null
+          card_image_asset_id?: string | null
+          updated_at?: string
+          variant_key: string
+        }
+        Update: {
+          background_asset_id?: string | null
+          card_image_asset_id?: string | null
+          updated_at?: string
+          variant_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_asset_links_background_asset_id_fkey"
+            columns: ["background_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_asset_links_card_image_asset_id_fkey"
+            columns: ["card_image_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_registry: {
         Row: {
           card_image: string

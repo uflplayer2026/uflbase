@@ -8,6 +8,13 @@
       "when": 1789657397614,
       "tag": "0000_create_card_registry",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789707158675,
+      "tag": "0001_create_asset_manager",
+      "breakpoints": true
     }
   ]
 }

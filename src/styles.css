@@ -233,6 +233,36 @@ h3 {
     background: color-mix(in oklch, var(--color-muted) 70%, transparent);
   }
 
+  /* Reusable background art sits behind the card image; the two stay separate assets. */
+  .player-card-background {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .asset-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .asset-tile {
+    overflow: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    background: color-mix(in oklch, var(--color-card) 92%, transparent);
+  }
+
+  .asset-thumb {
+    display: block;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    object-fit: cover;
+    background: color-mix(in oklch, var(--color-muted) 70%, transparent);
+  }
+
   .player-card-placeholder {
     display: flex;
     height: 100%;
