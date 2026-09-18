@@ -26,7 +26,7 @@ import {
 } from "@/lib/assetTypes";
 import { matchFileName, type MatchResult } from "@/lib/assetMatching";
 import { playersSnapshotQueryOptions } from "@/lib/playersQuery";
-import { cardAssetsQueryOptions, useCardAssetMap } from "@/lib/assetsQuery";
+import { useCardAssetMap } from "@/lib/assetsQuery";
 import { variantKey } from "@/lib/cardIdentity";
 import { LoadingState } from "@/components/CardsState";
 import type { PlayerCardRecord } from "@/lib/playerTypes";

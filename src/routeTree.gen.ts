@@ -19,6 +19,7 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as RecentRouteImport } from './routes/recent'
 import { Route as StatsRouteImport } from './routes/stats'
+import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated/assets'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as CardsIndexRouteImport } from './routes/cards.index'
 import { Route as CardsCardIdRouteImport } from './routes/cards.$cardId'
@@ -74,6 +75,11 @@ const StatsRoute = StatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAssetsRoute = AuthenticatedAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
+  '/assets': typeof AuthenticatedAssetsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
+  '/assets': typeof AuthenticatedAssetsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards': typeof CardsIndexRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/recent': typeof RecentRoute
   '/stats': typeof StatsRoute
+  '/_authenticated/assets': typeof AuthenticatedAssetsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/recent'
     | '/stats'
+    | '/assets'
     | '/settings'
     | '/cards/$cardId'
     | '/cards/'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/recent'
     | '/stats'
+    | '/assets'
     | '/settings'
     | '/cards/$cardId'
     | '/cards'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/recent'
     | '/stats'
+    | '/_authenticated/assets'
     | '/_authenticated/settings'
     | '/cards/$cardId'
     | '/cards/'
@@ -291,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/assets': {
+      id: '/_authenticated/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof AuthenticatedAssetsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -330,10 +349,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAssetsRoute: typeof AuthenticatedAssetsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAssetsRoute: AuthenticatedAssetsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
