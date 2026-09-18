@@ -178,6 +178,7 @@ export async function fetchSheetPlayers(): Promise<PlayerCardRecord[]> {
       phy: num(row, 9),
       perk: text(row, 10),
       cardImage: text(row, 11),
+      driveLink: text(row, 12),
     }))
     .filter((p) => p.playerName !== "" || p.ovr !== null);
 }

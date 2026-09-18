@@ -43,6 +43,8 @@ function toRecord(row: RegistryRow): PlayerCardRecord {
     phy: row.phy,
     perk: row.perk,
     cardImage: row.card_image,
+    // Drive Link is snapshot-only data, never part of identity or change history.
+    driveLink: "",
   };
 }
 
