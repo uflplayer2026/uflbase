@@ -90,6 +90,22 @@ function CardDetail() {
               ))}
 
               <Row label="Perk" value={player.perk || "—"} />
+              {driveLink ? (
+                <div className="flex items-center justify-between py-2 text-sm">
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Source
+                  </span>
+                  <a
+                    href={driveLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="focus-ring inline-flex min-h-11 items-center gap-1 rounded font-medium text-accent hover:underline"
+                  >
+                    Open Drive File
+                    <ExternalLink className="size-3.5" aria-hidden />
+                  </a>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
