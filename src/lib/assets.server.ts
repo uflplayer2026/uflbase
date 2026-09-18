@@ -202,9 +202,14 @@ export async function createUrlAsset(input: {
 
 export async function renameAsset(id: string, name: string, type?: string) {
   const db = await admin();
-  const patch: Record<string, unknown> = { name, updated_at: new Date().toISOString() };
-  if (type) patch["asset_type"] = type;
-  const { error } = await db.from("assets").update(patch).eq("id", id);
+  const { error } = await db
+    .from("assets")
+    .update({
+      name,
+      updated_at: new Date().toISOString(),
+      ...(type ? { asset_type: type } : {}),
+    })
+    .eq("id", id);
   if (error) throw error;
 }
 
