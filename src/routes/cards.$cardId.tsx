@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ExternalLink } from "lucide-react";
 import { PlayerCard } from "@/components/PlayerCard";
 import { LoadingState, ErrorState } from "@/components/CardsState";
 import { playersSnapshotQueryOptions } from "@/lib/playersQuery";
@@ -35,10 +35,17 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** A Drive Link is only actionable when it is a usable web URL. */
+function validDriveLink(value: string): string | null {
+  const v = value.trim();
+  return /^https?:\/\/\S+$/i.test(v) ? v : null;
+}
+
 function CardDetail() {
   const { cardId } = Route.useParams();
   const { data, isPending, isError, error } = useQuery(playersSnapshotQueryOptions);
   const player = data?.players.find((p) => p.id === cardId);
+  const driveLink = player ? validDriveLink(player.driveLink) : null;
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:py-10">
@@ -83,6 +90,22 @@ function CardDetail() {
               ))}
 
               <Row label="Perk" value={player.perk || "—"} />
+              {driveLink ? (
+                <div className="flex items-center justify-between py-2 text-sm">
+                  <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                    Source
+                  </span>
+                  <a
+                    href={driveLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="focus-ring inline-flex min-h-11 items-center gap-1 rounded font-medium text-accent hover:underline"
+                  >
+                    Open Drive File
+                    <ExternalLink className="size-3.5" aria-hidden />
+                  </a>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

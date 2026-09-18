@@ -135,7 +135,7 @@ export async function fetchSheetPlayers(): Promise<PlayerCardRecord[]> {
     throw new SheetsError("config", "No spreadsheet ID is configured for synchronization.");
   }
 
-  const range = `${c.sheetName}!A2:L`;
+  const range = `${c.sheetName}!A2:M`;
   console.log(`[sheets] read started (tab=${c.sheetName}, credentials=available)`);
 
   const res = await fetch(
@@ -178,6 +178,7 @@ export async function fetchSheetPlayers(): Promise<PlayerCardRecord[]> {
       phy: num(row, 9),
       perk: text(row, 10),
       cardImage: text(row, 11),
+      driveLink: text(row, 12),
     }))
     .filter((p) => p.playerName !== "" || p.ovr !== null);
 }
