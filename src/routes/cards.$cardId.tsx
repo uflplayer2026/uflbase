@@ -45,6 +45,7 @@ function CardDetail() {
   const { cardId } = Route.useParams();
   const { data, isPending, isError, error } = useQuery(playersSnapshotQueryOptions);
   const player = data?.players.find((p) => p.id === cardId);
+  const driveLink = player ? validDriveLink(player.driveLink) : null;
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:py-10">
