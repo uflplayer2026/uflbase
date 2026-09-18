@@ -73,9 +73,9 @@ async function usageCounts(): Promise<Map<string, number>> {
 }
 
 export async function listAssets(params: {
-  type?: string;
-  q?: string;
-  limit?: number;
+  type?: string | undefined;
+  q?: string | undefined;
+  limit?: number | undefined;
 }): Promise<AssetRecord[]> {
   const db = await admin();
   let query = db
@@ -163,7 +163,7 @@ export async function createUploadedAsset(input: {
  * asset no longer depends on the external site; `mode: "external"` keeps the link.
  */
 export async function createUrlAsset(input: {
-  name?: string;
+  name?: string | undefined;
   type: string;
   url: string;
   mode: "external" | "import";
