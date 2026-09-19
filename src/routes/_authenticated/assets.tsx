@@ -30,6 +30,9 @@ import { useCardAssetMap } from "@/lib/assetsQuery";
 import { variantKey } from "@/lib/cardIdentity";
 import { LoadingState } from "@/components/CardsState";
 import type { PlayerCardRecord } from "@/lib/playerTypes";
+import { CardTypesTab } from "@/components/admin/CardTypesTab";
+import { DriveTab } from "@/components/admin/DriveTab";
+import { CompositionEditor } from "@/components/admin/CompositionEditor";
 
 export const Route = createFileRoute("/_authenticated/assets")({
   head: () => ({
@@ -48,6 +51,8 @@ const TABS = [
   { id: "library", label: "Library" },
   { id: "cards", label: "Card images" },
   { id: "backgrounds", label: "Backgrounds" },
+  { id: "cardtypes", label: "Card types" },
+  { id: "drive", label: "Google Drive" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -84,6 +89,7 @@ function AssetManagerPage() {
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["asset-library"] });
     queryClient.invalidateQueries({ queryKey: ["card-assets"] });
+    queryClient.invalidateQueries({ queryKey: ["card-type-backgrounds"] });
   };
 
   if (library.isPending) {
@@ -154,8 +160,12 @@ function AssetManagerPage() {
         />
       ) : tab === "cards" ? (
         <CardImagesTab players={players} onChanged={refresh} />
-      ) : (
+      ) : tab === "backgrounds" ? (
         <BackgroundsTab players={players} assets={assets} onChanged={refresh} />
+      ) : tab === "cardtypes" ? (
+        <CardTypesTab assets={assets} players={players} onChanged={refresh} />
+      ) : (
+        <DriveTab onChanged={refresh} />
       )}
     </main>
   );
@@ -790,6 +800,12 @@ function BackgroundsTab({
         </div>
         {notice ? <p className="mt-3 text-sm text-muted-foreground">{notice}</p> : null}
       </section>
+
+      <CompositionEditor
+        backgrounds={backgrounds}
+        cardImages={assets.filter((a) => a.type === "PLAYER_CARD")}
+        onChanged={onChanged}
+      />
     </div>
   );
 }
