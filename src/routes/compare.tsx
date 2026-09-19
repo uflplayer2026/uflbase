@@ -162,9 +162,7 @@ function ComparisonResult({ cardA, cardB }: { cardA: PlayerCardRecord; cardB: Pl
           </div>
         ))}
 
-        {cardA.perk || cardB.perk ? (
-          <Meta label="Perk" a={cardA.perk} b={cardB.perk} />
-        ) : null}
+        {cardA.perk || cardB.perk ? <Meta label="Perk" a={cardA.perk} b={cardB.perk} /> : null}
       </div>
     </section>
   );

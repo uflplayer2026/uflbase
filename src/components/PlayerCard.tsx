@@ -3,7 +3,8 @@ import { ImageOff } from "lucide-react";
 import type { PlayerCardRecord } from "@/lib/playerTypes";
 import { STAT_KEYS } from "@/lib/playerTypes";
 import { STAT_LABELS } from "@/lib/statLabels";
-import { useCardAssetMap, resolveCardArt } from "@/lib/assetsQuery";
+import { useCardAssetMap, useCardTypeMap, resolveCardArt } from "@/lib/assetsQuery";
+import { compositionStyle } from "@/lib/cardComposition";
 
 function StatValue({ value }: { value: number | null }) {
   return <span className="stat-value">{value === null ? "—" : value}</span>;
@@ -13,7 +14,7 @@ function StatValue({ value }: { value: number | null }) {
 function PlayerCardBase({ player }: { player: PlayerCardRecord }) {
   const name = player.playerName || "Unknown player";
   // Card image and background are separate assets and are resolved separately.
-  const art = resolveCardArt(player, useCardAssetMap());
+  const art = resolveCardArt(player, useCardAssetMap(), useCardTypeMap());
 
   return (
     <article className="player-card">
@@ -30,6 +31,8 @@ function PlayerCardBase({ player }: { player: PlayerCardRecord }) {
         ) : null}
 
         {art.imageUrl ? (
+          // Layered composition: the image is fitted inside the background's safe area,
+          // aspect ratio preserved, never cropped and never overflowing the card.
           <img
             src={art.imageUrl}
             alt={`${name} — ${player.position || "player"} card${
@@ -37,7 +40,12 @@ function PlayerCardBase({ player }: { player: PlayerCardRecord }) {
             }`}
             loading="lazy"
             decoding="async"
-            className="relative h-full w-full object-cover"
+            className="player-card-image"
+            style={
+              art.backgroundUrl
+                ? compositionStyle(art.composition)
+                : { position: "relative", height: "100%", width: "100%", objectFit: "contain" }
+            }
           />
         ) : (
           <div className="player-card-placeholder">

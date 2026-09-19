@@ -18,14 +18,15 @@ const METRICS: { key: Metric; label: string }[] = [
   { key: "phy", label: "Highest PHY" },
 ];
 
-
 const TOP_N = 12;
 
 type Search = { metric?: Metric | undefined; position?: string | undefined };
 
 export const Route = createFileRoute("/best")({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    metric: METRICS.some((m) => m.key === search["metric"]) ? (search["metric"] as Metric) : undefined,
+    metric: METRICS.some((m) => m.key === search["metric"])
+      ? (search["metric"] as Metric)
+      : undefined,
     position:
       typeof search["position"] === "string" && search["position"] !== ""
         ? search["position"]
@@ -124,7 +125,11 @@ function BestPage() {
           ))}
         </select>
         {position ? (
-          <button type="button" className="btn-secondary focus-ring" onClick={() => set({ position: "" })}>
+          <button
+            type="button"
+            className="btn-secondary focus-ring"
+            onClick={() => set({ position: "" })}
+          >
             Clear filter
           </button>
         ) : null}

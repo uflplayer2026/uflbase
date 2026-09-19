@@ -10,7 +10,9 @@ const norm = (v: string) => v.trim().toLowerCase().replace(/\s+/g, " ");
  * must never define identity.
  */
 export function variantKey(p: PlayerCardRecord): string {
-  return [norm(p.playerName), norm(p.position), p.ovr === null ? "" : p.ovr, norm(p.perk)].join("|");
+  return [norm(p.playerName), norm(p.position), p.ovr === null ? "" : p.ovr, norm(p.perk)].join(
+    "|",
+  );
 }
 
 /** Fields that count as a record update within one variant. */

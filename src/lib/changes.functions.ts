@@ -12,7 +12,11 @@ export type CardChange = {
 
 const inputSchema = z.object({
   view: z.enum(["added", "updated", "variants"]),
-  hours: z.number().int().positive().max(24 * 365),
+  hours: z
+    .number()
+    .int()
+    .positive()
+    .max(24 * 365),
   limit: z.number().int().positive().max(200).optional(),
 });
 

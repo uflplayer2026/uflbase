@@ -10,7 +10,6 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { ShareCardButton } from "@/components/ShareCardButton";
 import { CompareButton } from "@/components/CompareButton";
 
-
 export const Route = createFileRoute("/cards/$cardId")({
   head: () => ({
     meta: [
@@ -77,7 +76,6 @@ function CardDetail() {
               <ShareCardButton player={player} />
             </div>
             <div className="mt-4">
-
               <Row label="OVR" value={player.ovr === null ? "—" : String(player.ovr)} />
               <Row label="Position" value={player.position || "—"} />
               <Row label="Nation" value={player.nation || "—"} />

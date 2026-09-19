@@ -153,9 +153,7 @@ function RootComponent() {
           <Outlet />
         </div>
         <footer className="mt-10 border-t border-border/60 px-4 py-6 text-center text-xs text-muted-foreground">
-          <p>
-            Community-made database. Not affiliated with or endorsed by Strikerz Inc.
-          </p>
+          <p>Community-made database. Not affiliated with or endorsed by Strikerz Inc.</p>
           <p className="mt-2 flex items-center justify-center gap-3">
             <Link to="/about" className="focus-ring rounded hover:text-foreground">
               About
@@ -170,4 +168,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

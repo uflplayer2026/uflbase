@@ -14,6 +14,8 @@ export type PlayerCardRecord = {
   cardImage: string;
   /** Read-only source link to the original Drive file. Never part of card identity. */
   driveLink: string;
+  /** Sheet column N. Drives the reusable background rule only — never card identity. */
+  cardType: string;
 };
 
 export type PlayersSnapshot = {

@@ -12,7 +12,10 @@ export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
       { title: "Admin Settings — UFL Mobile Player Card Database" },
-      { name: "description", content: "Administration and Google Sheets synchronization settings." },
+      {
+        name: "description",
+        content: "Administration and Google Sheets synchronization settings.",
+      },
       { property: "og:title", content: "Admin Settings — UFL Mobile Player Card Database" },
       {
         property: "og:description",
@@ -201,8 +204,9 @@ function SettingsPage() {
             s.lastErrorKind === "permission" ||
             s.lastErrorKind === "config" ? (
               <p className="mt-2 text-xs">
-                Reconnect the Google Sheets connection in the project's connection settings, then use
-                Sync Now. Cards on the site keep showing the last successfully synced data until then.
+                Reconnect the Google Sheets connection in the project's connection settings, then
+                use Sync Now. Cards on the site keep showing the last successfully synced data until
+                then.
               </p>
             ) : null}
           </div>

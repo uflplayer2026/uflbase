@@ -34,7 +34,8 @@ export function matchFileName(fileName: string, players: PlayerCardRecord[]): Ma
   const idToken = tokens.find((t) => /^r\d+$/.test(t));
   if (idToken) {
     const byId = players.find((p) => p.id === idToken);
-    if (byId) return { fileName, group: "matched", candidates: [{ player: byId, reason: "Card ID" }] };
+    if (byId)
+      return { fileName, group: "matched", candidates: [{ player: byId, reason: "Card ID" }] };
   }
 
   // 2. Player name contained in the file name.

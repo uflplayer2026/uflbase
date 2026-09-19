@@ -20,10 +20,7 @@ export function InstallPrompt() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.matchMedia("(display-mode: standalone)").matches) return;
-    if (
-      (window.navigator as Navigator & { standalone?: boolean }).standalone === true
-    )
-      return;
+    if ((window.navigator as Navigator & { standalone?: boolean }).standalone === true) return;
     try {
       if (localStorage.getItem(DISMISS_KEY) === "1") return;
     } catch {

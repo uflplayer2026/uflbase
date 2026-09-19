@@ -18,13 +18,20 @@ export type Database = {
         Row: {
           asset_type: string
           created_at: string
+          drive_file_id: string | null
+          drive_folder: string | null
+          drive_modified_at: string | null
           file_size: number | null
           height: number | null
           id: string
+          import_status: string
           mime_type: string
           name: string
+          protected_areas: Json
+          safe_area: Json | null
           source: string
           storage_path: string | null
+          tags: Json
           updated_at: string
           url: string
           width: number | null
@@ -32,13 +39,20 @@ export type Database = {
         Insert: {
           asset_type?: string
           created_at?: string
+          drive_file_id?: string | null
+          drive_folder?: string | null
+          drive_modified_at?: string | null
           file_size?: number | null
           height?: number | null
           id?: string
+          import_status?: string
           mime_type?: string
           name: string
+          protected_areas?: Json
+          safe_area?: Json | null
           source?: string
           storage_path?: string | null
+          tags?: Json
           updated_at?: string
           url: string
           width?: number | null
@@ -46,13 +60,20 @@ export type Database = {
         Update: {
           asset_type?: string
           created_at?: string
+          drive_file_id?: string | null
+          drive_folder?: string | null
+          drive_modified_at?: string | null
           file_size?: number | null
           height?: number | null
           id?: string
+          import_status?: string
           mime_type?: string
           name?: string
+          protected_areas?: Json
+          safe_area?: Json | null
           source?: string
           storage_path?: string | null
+          tags?: Json
           updated_at?: string
           url?: string
           width?: number | null
@@ -62,19 +83,25 @@ export type Database = {
       card_asset_links: {
         Row: {
           background_asset_id: string | null
+          background_manual: boolean
           card_image_asset_id: string | null
+          composition: Json | null
           updated_at: string
           variant_key: string
         }
         Insert: {
           background_asset_id?: string | null
+          background_manual?: boolean
           card_image_asset_id?: string | null
+          composition?: Json | null
           updated_at?: string
           variant_key: string
         }
         Update: {
           background_asset_id?: string | null
+          background_manual?: boolean
           card_image_asset_id?: string | null
+          composition?: Json | null
           updated_at?: string
           variant_key?: string
         }
@@ -164,6 +191,56 @@ export type Database = {
         }
         Relationships: []
       }
+      card_type_backgrounds: {
+        Row: {
+          background_asset_id: string | null
+          card_type: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          background_asset_id?: string | null
+          card_type: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          background_asset_id?: string | null
+          card_type?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_type_backgrounds_background_asset_id_fkey"
+            columns: ["background_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_type_registry: {
+        Row: {
+          card_count: number
+          card_type: string
+          first_seen_at: string
+          last_seen_at: string
+        }
+        Insert: {
+          card_count?: number
+          card_type: string
+          first_seen_at?: string
+          last_seen_at?: string
+        }
+        Update: {
+          card_count?: number
+          card_type?: string
+          first_seen_at?: string
+          last_seen_at?: string
+        }
+        Relationships: []
+      }
       changelog_entries: {
         Row: {
           categories: Json
@@ -194,6 +271,101 @@ export type Database = {
           title?: string
           updated_at?: string
           version?: string
+        }
+        Relationships: []
+      }
+      drive_assets: {
+        Row: {
+          asset_id: string | null
+          asset_type: string
+          detected_at: string
+          drive_file_id: string
+          drive_modified_at: string | null
+          error: string | null
+          file_size: number | null
+          folder: string
+          match_group: string | null
+          matched_variant_key: string | null
+          mime_type: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          asset_id?: string | null
+          asset_type?: string
+          detected_at?: string
+          drive_file_id: string
+          drive_modified_at?: string | null
+          error?: string | null
+          file_size?: number | null
+          folder?: string
+          match_group?: string | null
+          matched_variant_key?: string | null
+          mime_type?: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          asset_id?: string | null
+          asset_type?: string
+          detected_at?: string
+          drive_file_id?: string
+          drive_modified_at?: string | null
+          error?: string | null
+          file_size?: number | null
+          folder?: string
+          match_group?: string | null
+          matched_variant_key?: string | null
+          mime_type?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drive_assets_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drive_sync_state: {
+        Row: {
+          counters: Json
+          id: string
+          import_mode: string
+          last_error: string | null
+          last_status: string | null
+          last_sync_at: string | null
+          root_folder_id: string | null
+          sync_running: boolean
+          updated_at: string
+        }
+        Insert: {
+          counters?: Json
+          id: string
+          import_mode?: string
+          last_error?: string | null
+          last_status?: string | null
+          last_sync_at?: string | null
+          root_folder_id?: string | null
+          sync_running?: boolean
+          updated_at?: string
+        }
+        Update: {
+          counters?: Json
+          id?: string
+          import_mode?: string
+          last_error?: string | null
+          last_status?: string | null
+          last_sync_at?: string | null
+          root_folder_id?: string | null
+          sync_running?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
