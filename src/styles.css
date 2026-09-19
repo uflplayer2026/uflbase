@@ -242,6 +242,37 @@ h3 {
     object-fit: cover;
   }
 
+  /* Composed card image layer: positioned by the composition engine, never cropped. */
+  .player-card-image {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* Admin-only composition guides. Never rendered for normal visitors. */
+  .composition-safe-guide {
+    position: absolute;
+    border: 1px dashed color-mix(in oklch, var(--color-primary) 70%, transparent);
+    background: color-mix(in oklch, var(--color-primary) 10%, transparent);
+    pointer-events: none;
+  }
+
+  .composition-protected-guide {
+    position: absolute;
+    border: 1px dashed color-mix(in oklch, var(--color-destructive) 70%, transparent);
+    background: color-mix(in oklch, var(--color-destructive) 12%, transparent);
+    pointer-events: none;
+  }
+
+  .composition-stage {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    width: 100%;
+    max-width: 18rem;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: color-mix(in oklch, var(--color-muted) 70%, transparent);
+  }
+
   .asset-grid {
     display: grid;
     gap: 0.75rem;
