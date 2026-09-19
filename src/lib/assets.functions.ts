@@ -149,3 +149,65 @@ export const applyCardBackground = createServerFn({ method: "POST" })
     const { applyBackground } = await import("./assets.server");
     return { applied: await applyBackground(data.variantKeys, data.assetId) };
   });
+
+/** Composition geometry for a background: reusable safe area + protected areas. */
+export const saveBackgroundAreas = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        assetId: z.string().uuid(),
+        safeArea: z.object({
+          top: z.number().min(0).max(100),
+          right: z.number().min(0).max(100),
+          bottom: z.number().min(0).max(100),
+          left: z.number().min(0).max(100),
+          maxWidth: z.number().min(1).max(100),
+          maxHeight: z.number().min(1).max(100),
+          alignX: z.enum(["start", "center", "end"]),
+          alignY: z.enum(["start", "center", "end"]),
+        }),
+        protectedAreas: z
+          .array(
+            z.object({
+              label: z.string().max(80),
+              top: z.number().min(0).max(100),
+              right: z.number().min(0).max(100),
+              bottom: z.number().min(0).max(100),
+              left: z.number().min(0).max(100),
+            }),
+          )
+          .max(20),
+      })
+      .parse(data),
+  )
+  .handler(async ({ context, data }): Promise<{ ok: true }> => {
+    await guard(context.claims);
+    const { saveBackgroundGeometry } = await import("./assets.server");
+    await saveBackgroundGeometry(data.assetId, data.safeArea, data.protectedAreas);
+    return { ok: true };
+  });
+
+/** Per-card manual composition override; automatic composition is the default. */
+export const saveCardCompositionOverride = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        variantKey: z.string().min(1),
+        override: z
+          .object({
+            scale: z.number().min(0.4).max(1.4),
+            x: z.number().min(-40).max(40),
+            y: z.number().min(-40).max(40),
+          })
+          .nullable(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ context, data }): Promise<{ ok: true }> => {
+    await guard(context.claims);
+    const { saveCardComposition } = await import("./assets.server");
+    await saveCardComposition(data.variantKey, data.override);
+    return { ok: true };
+  });

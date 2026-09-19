@@ -122,7 +122,7 @@ function classifyFailure(status: number, body: string): SheetsError {
   return new SheetsError("unknown", `Google Sheets returned an unexpected error (${status}).`);
 }
 
-/** Fetches the raw sheet rows and maps them onto the fixed 12-column model. */
+/** Fetches the raw sheet rows and maps them onto the fixed 14-column model. */
 export async function fetchSheetPlayers(): Promise<PlayerCardRecord[]> {
   const c = config();
   if (!c.lovableKey || !c.connectionKey) {
@@ -135,7 +135,7 @@ export async function fetchSheetPlayers(): Promise<PlayerCardRecord[]> {
     throw new SheetsError("config", "No spreadsheet ID is configured for synchronization.");
   }
 
-  const range = `${c.sheetName}!A2:M`;
+  const range = `${c.sheetName}!A2:N`;
   console.log(`[sheets] read started (tab=${c.sheetName}, credentials=available)`);
 
   const res = await fetch(
@@ -179,6 +179,7 @@ export async function fetchSheetPlayers(): Promise<PlayerCardRecord[]> {
       perk: text(row, 10),
       cardImage: text(row, 11),
       driveLink: text(row, 12),
+      cardType: text(row, 13),
     }))
     .filter((p) => p.playerName !== "" || p.ovr !== null);
 }
@@ -210,6 +211,9 @@ export async function runSync(trigger: "auto" | "manual" | "initial"): Promise<S
     // Incremental: only new/changed records are written to the change registry.
     const { reconcileRegistry } = await import("./changes.server");
     const changeCount = await reconcileRegistry(players);
+    // Card types are recorded so newly appearing ones can be surfaced to the admin.
+    const { registerCardTypes } = await import("./cardTypes.server");
+    await registerCardTypes(players);
     const durationMs = Date.now() - started;
     await db
       .from("sheet_sync_state")

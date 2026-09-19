@@ -15,6 +15,13 @@
       "when": 1789707158675,
       "tag": "0001_create_asset_manager",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789815843887,
+      "tag": "0002_drive_pipeline_card_types_composition",
+      "breakpoints": true
     }
   ]
 }
