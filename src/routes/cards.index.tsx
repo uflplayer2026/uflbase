@@ -6,12 +6,7 @@ import { PlayerCard } from "@/components/PlayerCard";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { CompareButton } from "@/components/CompareButton";
 import { CardFilters, SORT_KEYS, type CardFilterValues } from "@/components/CardFilters";
-import {
-  CardGridSkeleton,
-  ErrorState,
-  EmptyState,
-  NoResultsState,
-} from "@/components/CardsState";
+import { CardGridSkeleton, ErrorState, EmptyState, NoResultsState } from "@/components/CardsState";
 import { playersSnapshotQueryOptions, formatDateTime } from "@/lib/playersQuery";
 import { STAT_KEYS, type PlayerCardRecord, type SortKey } from "@/lib/playerTypes";
 import { STAT_LABELS } from "@/lib/statLabels";
@@ -185,7 +180,6 @@ function CardsPage() {
 
   useEffect(() => {
     setSearchDraft(values.q);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values.q]);
 
   const players = data?.players ?? [];
@@ -406,7 +400,12 @@ function CardsPage() {
       </div>
 
       {drawerOpen ? (
-        <div className="filter-drawer-root lg:hidden" role="dialog" aria-modal="true" aria-label="Search and filters">
+        <div
+          className="filter-drawer-root lg:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search and filters"
+        >
           <button
             type="button"
             className="filter-drawer-backdrop"

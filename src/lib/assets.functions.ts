@@ -38,7 +38,11 @@ export const uploadAsset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
     z
-      .object({ name: z.string().min(1).max(200), type: assetTypeSchema, base64: z.string().min(16) })
+      .object({
+        name: z.string().min(1).max(200),
+        type: assetTypeSchema,
+        base64: z.string().min(16),
+      })
       .parse(data),
   )
   .handler(async ({ context, data }): Promise<AssetRecord> => {

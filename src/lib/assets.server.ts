@@ -460,12 +460,10 @@ export async function assignCardImages(
   }
 
   for (let i = 0; i < rows.length; i += 500) {
-    const { error: upsertError } = await db
-      .from("card_asset_links")
-      .upsert(
-        rows.slice(i, i + 500).map((r) => ({ ...r, updated_at: new Date().toISOString() })),
-        { onConflict: "variant_key" },
-      );
+    const { error: upsertError } = await db.from("card_asset_links").upsert(
+      rows.slice(i, i + 500).map((r) => ({ ...r, updated_at: new Date().toISOString() })),
+      { onConflict: "variant_key" },
+    );
     if (upsertError) throw upsertError;
   }
   return { assigned: rows.length, skipped };

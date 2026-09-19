@@ -31,10 +31,7 @@ export function CardTypesTab({
   const removeFn = useServerFn(removeCardTypeMapping);
   const assetMap = useCardAssetMap();
 
-  const backgrounds = useMemo(
-    () => assets.filter((a) => a.type === "CARD_BACKGROUND"),
-    [assets],
-  );
+  const backgrounds = useMemo(() => assets.filter((a) => a.type === "CARD_BACKGROUND"), [assets]);
   const [choice, setChoice] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<string | null>(null);
 

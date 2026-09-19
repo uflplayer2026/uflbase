@@ -184,8 +184,7 @@ export function DriveTab({ onChanged }: { onChanged: () => void }) {
                   <p className="truncate font-semibold">{row.name}</p>
                   <p className="text-xs text-muted-foreground">
                     Google Drive → {row.folder} · {assetTypeLabel(row.type)} ·{" "}
-                    {formatBytes(row.fileSize)} ·{" "}
-                    {IMPORT_STATUS_LABELS[row.status] ?? row.status}
+                    {formatBytes(row.fileSize)} · {IMPORT_STATUS_LABELS[row.status] ?? row.status}
                     {row.matchGroup ? ` · ${row.matchGroup}` : ""}
                   </p>
                   {row.error ? <p className="text-xs text-destructive">{row.error}</p> : null}

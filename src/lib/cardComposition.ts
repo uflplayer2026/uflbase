@@ -198,7 +198,7 @@ export function computeComposition(input: {
   const iw = input.imageWidth && input.imageWidth > 0 ? input.imageWidth : 3;
   const ih = input.imageHeight && input.imageHeight > 0 ? input.imageHeight : 4;
   // Aspect ratio expressed in container-percentage space.
-  const ratio = (iw / ih) / cardAspect;
+  const ratio = iw / ih / cardAspect;
 
   let height = box.h;
   let width = height * ratio;

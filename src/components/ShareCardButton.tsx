@@ -17,7 +17,13 @@ function shareText(player: PlayerCardRecord) {
 }
 
 /** Shares real synced card data. Uses the native share sheet when available. */
-export function ShareCardButton({ player, className = "" }: { player: PlayerCardRecord; className?: string }) {
+export function ShareCardButton({
+  player,
+  className = "",
+}: {
+  player: PlayerCardRecord;
+  className?: string;
+}) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
 
   const onShare = async () => {

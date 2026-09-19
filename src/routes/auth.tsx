@@ -9,7 +9,10 @@ export const Route = createFileRoute("/auth")({
       { title: "Admin Sign In — UFL Mobile Player Card Database" },
       { name: "description", content: "Administrator sign-in for the UFL Mobile card database." },
       { property: "og:title", content: "Admin Sign In — UFL Mobile Player Card Database" },
-      { property: "og:description", content: "Administrator sign-in for the UFL Mobile card database." },
+      {
+        property: "og:description",
+        content: "Administrator sign-in for the UFL Mobile card database.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),

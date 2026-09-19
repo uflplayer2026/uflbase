@@ -21,7 +21,9 @@ export function CompareButton({
     <Link
       to="/compare"
       search={{ a: cardId }}
-      className={withLabel ? `btn-secondary focus-ring ${className}` : `icon-btn focus-ring ${className}`}
+      className={
+        withLabel ? `btn-secondary focus-ring ${className}` : `icon-btn focus-ring ${className}`
+      }
       aria-label={label}
       title={label}
       onClick={(e) => e.stopPropagation()}

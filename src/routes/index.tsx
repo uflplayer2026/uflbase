@@ -52,9 +52,7 @@ function Index() {
 
   const featured = useMemo(() => {
     if (!players) return [];
-    return [...players]
-      .sort((a, b) => (b.ovr ?? -1) - (a.ovr ?? -1))
-      .slice(0, 8);
+    return [...players].sort((a, b) => (b.ovr ?? -1) - (a.ovr ?? -1)).slice(0, 8);
   }, [players]);
 
   return (
@@ -82,7 +80,9 @@ function Index() {
             <Stat label="Cards" value={String(stats.cards)} />
             <Stat label="Positions" value={String(stats.positions)} />
             <Stat label="Nations" value={String(stats.nations)} />
-            {stats.topOvr !== null ? <Stat label="Highest OVR" value={String(stats.topOvr)} /> : null}
+            {stats.topOvr !== null ? (
+              <Stat label="Highest OVR" value={String(stats.topOvr)} />
+            ) : null}
           </div>
         ) : null}
 
@@ -96,7 +96,10 @@ function Index() {
       <section className="mt-10">
         <div className="mb-4 flex items-end justify-between gap-3">
           <h2 className="text-lg font-semibold">Highest rated cards</h2>
-          <Link to="/cards" className="focus-ring rounded text-sm font-medium text-accent hover:underline">
+          <Link
+            to="/cards"
+            className="focus-ring rounded text-sm font-medium text-accent hover:underline"
+          >
             View all →
           </Link>
         </div>

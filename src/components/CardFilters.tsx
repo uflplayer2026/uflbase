@@ -20,16 +20,7 @@ export type CardFilterValues = {
   dir: "asc" | "desc";
 };
 
-export const SORT_KEYS: SortKey[] = [
-  "ovr",
-  "playerName",
-  "pac",
-  "sho",
-  "pas",
-  "dri",
-  "def",
-  "phy",
-];
+export const SORT_KEYS: SortKey[] = ["ovr", "playerName", "pac", "sho", "pas", "dri", "def", "phy"];
 
 /**
  * Presentational filter panel. Used inline as a desktop sidebar and inside the

@@ -55,9 +55,12 @@ function classify(status: number, body: string): DriveError {
       );
     return new DriveError("permission", "Google denied access to this Drive file or folder.");
   }
-  if (status === 404) return new DriveError("not_found", "The Drive file or folder no longer exists.");
-  if (status === 429) return new DriveError("rate_limit", "Google Drive rate limit reached. Try again shortly.");
-  if (status >= 500) return new DriveError("provider", `Google Drive is temporarily unavailable (${status}).`);
+  if (status === 404)
+    return new DriveError("not_found", "The Drive file or folder no longer exists.");
+  if (status === 429)
+    return new DriveError("rate_limit", "Google Drive rate limit reached. Try again shortly.");
+  if (status >= 500)
+    return new DriveError("provider", `Google Drive is temporarily unavailable (${status}).`);
   return new DriveError("unknown", `Google Drive returned an unexpected error (${status}).`);
 }
 
@@ -112,7 +115,11 @@ async function listChildren(parentId: string, extraQuery: string): Promise<Drive
 
 async function readState() {
   const db = await admin();
-  const { data, error } = await db.from("drive_sync_state").select("*").eq("id", STATE_ID).maybeSingle();
+  const { data, error } = await db
+    .from("drive_sync_state")
+    .select("*")
+    .eq("id", STATE_ID)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }

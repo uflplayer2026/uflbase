@@ -55,7 +55,9 @@ export function CardPicker({
 
       <ul className="max-h-64 space-y-1 overflow-y-auto pr-1">
         {matches.length === 0 ? (
-          <li className="px-1 py-2 text-sm text-muted-foreground">No matching player cards found.</li>
+          <li className="px-1 py-2 text-sm text-muted-foreground">
+            No matching player cards found.
+          </li>
         ) : (
           matches.map((p) => (
             <li key={p.id}>

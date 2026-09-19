@@ -56,7 +56,8 @@ function toForm(entry: ChangelogEntry): FormState {
     ChangelogCategory,
     string
   >;
-  for (const key of CHANGELOG_CATEGORIES) categories[key] = (entry.categories[key] ?? []).join("\n");
+  for (const key of CHANGELOG_CATEGORIES)
+    categories[key] = (entry.categories[key] ?? []).join("\n");
   return {
     id: entry.id,
     version: entry.version,
@@ -219,7 +220,10 @@ function ChangelogPage() {
           />
           <div className="grid gap-2 sm:grid-cols-2">
             {CHANGELOG_CATEGORIES.map((key) => (
-              <label key={key} className="block text-xs uppercase tracking-widest text-muted-foreground">
+              <label
+                key={key}
+                className="block text-xs uppercase tracking-widest text-muted-foreground"
+              >
                 {key}
                 <textarea
                   className="field focus-ring mt-1 w-full text-sm normal-case tracking-normal text-foreground"
@@ -237,7 +241,11 @@ function ChangelogPage() {
             <button type="submit" className="btn-primary focus-ring" disabled={save.isPending}>
               {save.isPending ? "Saving…" : "Save entry"}
             </button>
-            <button type="button" className="btn-secondary focus-ring" onClick={() => setForm(null)}>
+            <button
+              type="button"
+              className="btn-secondary focus-ring"
+              onClick={() => setForm(null)}
+            >
               Cancel
             </button>
           </div>
@@ -297,7 +305,9 @@ function ChangelogPage() {
               </div>
 
               {entry.description ? (
-                <p className="mt-2 text-sm text-muted-foreground break-words">{entry.description}</p>
+                <p className="mt-2 text-sm text-muted-foreground break-words">
+                  {entry.description}
+                </p>
               ) : null}
 
               <div className="mt-3 space-y-3">

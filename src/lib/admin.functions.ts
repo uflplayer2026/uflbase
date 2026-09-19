@@ -71,7 +71,11 @@ export const testSheetsConnection = createServerFn({ method: "POST" })
     const { fetchSheetPlayers } = await import("./sheets.server");
     try {
       const players = await fetchSheetPlayers();
-      return { ok: true, message: `Connection OK — ${players.length} rows readable.`, rows: players.length };
+      return {
+        ok: true,
+        message: `Connection OK — ${players.length} rows readable.`,
+        rows: players.length,
+      };
     } catch (err) {
       return {
         ok: false,

@@ -10,8 +10,10 @@ import {
   type SafeArea,
 } from "@/lib/cardComposition";
 
-const NUMS: (keyof Pick<SafeArea, "top" | "right" | "bottom" | "left" | "maxWidth" | "maxHeight">)[] =
-  ["top", "right", "bottom", "left", "maxWidth", "maxHeight"];
+const NUMS: (keyof Pick<
+  SafeArea,
+  "top" | "right" | "bottom" | "left" | "maxWidth" | "maxHeight"
+>)[] = ["top", "right", "bottom", "left", "maxWidth", "maxHeight"];
 
 /**
  * Admin-only safe area / protected area editor with a live

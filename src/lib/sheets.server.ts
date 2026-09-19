@@ -326,7 +326,8 @@ function toSnapshot(state: StateRow | null, intervalMinutes: number): PlayersSna
     lastDurationMs: state?.last_duration_ms ?? null,
     lastStatus: state?.last_status ?? null,
     lastError: state?.last_error ?? null,
-    lastErrorKind: state?.last_status === "failed" ? failureKindFromMessage(state.last_error) : null,
+    lastErrorKind:
+      state?.last_status === "failed" ? failureKindFromMessage(state.last_error) : null,
     syncing: state?.sync_running ?? false,
     nextSyncAt: lastSuccessAt
       ? new Date(new Date(lastSuccessAt).getTime() + intervalMinutes * 60_000).toISOString()

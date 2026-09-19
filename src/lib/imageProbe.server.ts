@@ -38,8 +38,7 @@ function webpSize(b: Uint8Array): { width: number | null; height: number | null 
     };
   }
   if (fourcc === "VP8L") {
-    const bits =
-      at(b, 21) | (at(b, 22) << 8) | (at(b, 23) << 16) | (at(b, 24) << 24);
+    const bits = at(b, 21) | (at(b, 22) << 8) | (at(b, 23) << 16) | (at(b, 24) << 24);
     return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
   }
   return { width: null, height: null };
