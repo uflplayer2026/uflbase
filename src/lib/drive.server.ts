@@ -400,7 +400,7 @@ export async function getDriveStatus(): Promise<DriveSyncStatus> {
     lastSchedulerRunAt: lastRun,
     lastTrigger: state?.last_trigger ?? null,
     lastRun: {
-      checked: raw.checked ?? raw.detected ?? 0,
+      checked: raw.checked ?? raw["detected"] ?? 0,
       newFiles: raw.newFiles ?? 0,
       updatedFiles: raw.updatedFiles ?? 0,
       imported: raw.imported ?? 0,
@@ -509,7 +509,11 @@ export async function syncDrive(trigger: "manual" | "auto" = "manual"): Promise<
 
       const seen = new Set<string>();
       const toProcess: string[] = [];
-      const rows: Record<string, unknown>[] = [];
+      const rows: {
+        drive_file_id: string;
+        name: string;
+        [k: string]: unknown;
+      }[] = [];
       for (const file of files) {
         seen.add(file.id);
         c.checked += 1;
@@ -562,7 +566,8 @@ export async function syncDrive(trigger: "manual" | "auto" = "manual"): Promise<
       for (let i = 0; i < rows.length; i += 300) {
         const { error } = await db
           .from("drive_assets")
-          .upsert(rows.slice(i, i + 300), { onConflict: "drive_file_id" });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .upsert(rows.slice(i, i + 300) as any, { onConflict: "drive_file_id" });
         if (error) throw error;
       }
 
