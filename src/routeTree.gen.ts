@@ -23,7 +23,6 @@ import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as CardsIndexRouteImport } from './routes/cards.index'
 import { Route as CardsCardIdRouteImport } from './routes/cards.$cardId'
-import { Route as ApiPublicDriveSyncCronRouteImport } from './routes/api/public/drive-sync-cron'
 import { Route as ApiPublicSyncCronRouteImport } from './routes/api/public/sync-cron'
 import { Route as ApiPublicAssetSplatRouteImport } from './routes/api/public/asset.$'
 
@@ -96,11 +95,6 @@ const CardsCardIdRoute = CardsCardIdRouteImport.update({
   path: '/cards/$cardId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicDriveSyncCronRoute = ApiPublicDriveSyncCronRouteImport.update({
-  id: '/api/public/drive-sync-cron',
-  path: '/api/public/drive-sync-cron',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicSyncCronRoute = ApiPublicSyncCronRouteImport.update({
   id: '/api/public/sync-cron',
   path: '/api/public/sync-cron',
@@ -126,7 +120,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
-  '/api/public/drive-sync-cron': typeof ApiPublicDriveSyncCronRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
   '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
@@ -144,7 +137,6 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards': typeof CardsIndexRoute
-  '/api/public/drive-sync-cron': typeof ApiPublicDriveSyncCronRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
   '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
@@ -164,7 +156,6 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/cards/$cardId': typeof CardsCardIdRoute
   '/cards/': typeof CardsIndexRoute
-  '/api/public/drive-sync-cron': typeof ApiPublicDriveSyncCronRoute
   '/api/public/sync-cron': typeof ApiPublicSyncCronRoute
   '/api/public/asset/$': typeof ApiPublicAssetSplatRoute
 }
@@ -184,7 +175,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/cards/$cardId'
     | '/cards/'
-    | '/api/public/drive-sync-cron'
     | '/api/public/sync-cron'
     | '/api/public/asset/$'
   fileRoutesByTo: FileRoutesByTo
@@ -202,7 +192,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/cards/$cardId'
     | '/cards'
-    | '/api/public/drive-sync-cron'
     | '/api/public/sync-cron'
     | '/api/public/asset/$'
   id:
@@ -221,7 +210,6 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/cards/$cardId'
     | '/cards/'
-    | '/api/public/drive-sync-cron'
     | '/api/public/sync-cron'
     | '/api/public/asset/$'
   fileRoutesById: FileRoutesById
@@ -239,7 +227,6 @@ export interface RootRouteChildren {
   StatsRoute: typeof StatsRoute
   CardsCardIdRoute: typeof CardsCardIdRoute
   CardsIndexRoute: typeof CardsIndexRoute
-  ApiPublicDriveSyncCronRoute: typeof ApiPublicDriveSyncCronRoute
   ApiPublicSyncCronRoute: typeof ApiPublicSyncCronRoute
   ApiPublicAssetSplatRoute: typeof ApiPublicAssetSplatRoute
 }
@@ -344,13 +331,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CardsCardIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/drive-sync-cron': {
-      id: '/api/public/drive-sync-cron'
-      path: '/api/public/drive-sync-cron'
-      fullPath: '/api/public/drive-sync-cron'
-      preLoaderRoute: typeof ApiPublicDriveSyncCronRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/sync-cron': {
       id: '/api/public/sync-cron'
       path: '/api/public/sync-cron'
@@ -394,7 +374,6 @@ const rootRouteChildren: RootRouteChildren = {
   StatsRoute: StatsRoute,
   CardsCardIdRoute: CardsCardIdRoute,
   CardsIndexRoute: CardsIndexRoute,
-  ApiPublicDriveSyncCronRoute: ApiPublicDriveSyncCronRoute,
   ApiPublicSyncCronRoute: ApiPublicSyncCronRoute,
   ApiPublicAssetSplatRoute: ApiPublicAssetSplatRoute,
 }

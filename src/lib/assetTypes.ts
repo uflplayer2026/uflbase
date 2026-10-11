@@ -137,7 +137,6 @@ export const IMPORT_STATUSES = [
   "UNMATCHED",
   "FAILED",
   "IGNORED",
-  "MISSING",
 ] as const;
 
 export type ImportStatus = (typeof IMPORT_STATUSES)[number];
@@ -153,7 +152,6 @@ export const IMPORT_STATUS_LABELS: Record<string, string> = {
   UNMATCHED: "Unmatched",
   FAILED: "Failed",
   IGNORED: "Ignored",
-  MISSING: "Missing in Drive",
 };
 
 export const DRIVE_IMPORT_MODES = ["manual", "automatic", "automatic_apply"] as const;
@@ -177,8 +175,6 @@ export type DriveAssetRecord = {
   error: string | null;
   assetId: string | null;
   matchGroup: string | null;
-  retryCount: number;
-  failedAt: string | null;
   detectedAt: string;
   updatedAt: string;
 };
@@ -190,24 +186,6 @@ export type DriveSyncStatus = {
   lastSyncAt: string | null;
   lastStatus: string | null;
   lastError: string | null;
-  lastErrorKind: string | null;
-  authRequired: boolean;
-  autoSyncEnabled: boolean;
-  intervalMinutes: number;
-  nextScheduledAt: string | null;
-  lastSchedulerRunAt: string | null;
-  lastTrigger: string | null;
-  lastRun: {
-    checked: number;
-    newFiles: number;
-    updatedFiles: number;
-    imported: number;
-    matched: number;
-    review: number;
-    unmatched: number;
-    failed: number;
-    missing: number;
-  };
   counters: {
     detected?: number;
     imported?: number;

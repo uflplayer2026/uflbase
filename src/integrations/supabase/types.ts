@@ -282,14 +282,12 @@ export type Database = {
           drive_file_id: string
           drive_modified_at: string | null
           error: string | null
-          failed_at: string | null
           file_size: number | null
           folder: string
           match_group: string | null
           matched_variant_key: string | null
           mime_type: string
           name: string
-          retry_count: number
           status: string
           updated_at: string
         }
@@ -300,14 +298,12 @@ export type Database = {
           drive_file_id: string
           drive_modified_at?: string | null
           error?: string | null
-          failed_at?: string | null
           file_size?: number | null
           folder?: string
           match_group?: string | null
           matched_variant_key?: string | null
           mime_type?: string
           name: string
-          retry_count?: number
           status?: string
           updated_at?: string
         }
@@ -318,14 +314,12 @@ export type Database = {
           drive_file_id?: string
           drive_modified_at?: string | null
           error?: string | null
-          failed_at?: string | null
           file_size?: number | null
           folder?: string
           match_group?: string | null
           matched_variant_key?: string | null
           mime_type?: string
           name?: string
-          retry_count?: number
           status?: string
           updated_at?: string
         }
@@ -341,67 +335,37 @@ export type Database = {
       }
       drive_sync_state: {
         Row: {
-          auto_sync_enabled: boolean
           counters: Json
           id: string
           import_mode: string
           last_error: string | null
-          last_error_kind: string | null
-          last_scheduler_run_at: string | null
           last_status: string | null
           last_sync_at: string | null
-          last_trigger: string | null
           root_folder_id: string | null
           sync_running: boolean
-          sync_started_at: string | null
           updated_at: string
         }
         Insert: {
-          auto_sync_enabled?: boolean
           counters?: Json
           id: string
           import_mode?: string
           last_error?: string | null
-          last_error_kind?: string | null
-          last_scheduler_run_at?: string | null
           last_status?: string | null
           last_sync_at?: string | null
-          last_trigger?: string | null
           root_folder_id?: string | null
           sync_running?: boolean
-          sync_started_at?: string | null
           updated_at?: string
         }
         Update: {
-          auto_sync_enabled?: boolean
           counters?: Json
           id?: string
           import_mode?: string
           last_error?: string | null
-          last_error_kind?: string | null
-          last_scheduler_run_at?: string | null
           last_status?: string | null
           last_sync_at?: string | null
-          last_trigger?: string | null
           root_folder_id?: string | null
           sync_running?: boolean
-          sync_started_at?: string | null
           updated_at?: string
-        }
-        Relationships: []
-      }
-      scheduler_config: {
-        Row: {
-          key: string
-          value: string
-        }
-        Insert: {
-          key: string
-          value: string
-        }
-        Update: {
-          key?: string
-          value?: string
         }
         Relationships: []
       }
@@ -455,10 +419,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      acquire_drive_sync_lock: {
-        Args: { _stale_seconds?: number }
-        Returns: boolean
-      }
       acquire_sync_lock: { Args: { _stale_seconds?: number }; Returns: boolean }
     }
     Enums: {
