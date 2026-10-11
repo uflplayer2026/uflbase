@@ -390,6 +390,21 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduler_config: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       sheet_sync_state: {
         Row: {
           card_count: number
