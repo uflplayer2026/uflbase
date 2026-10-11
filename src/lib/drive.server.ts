@@ -181,6 +181,8 @@ type DriveRow = {
   asset_id: string | null;
   match_group: string | null;
   matched_variant_key: string | null;
+  retry_count?: number;
+  failed_at?: string | null;
   detected_at: string;
   updated_at: string;
 };
@@ -198,6 +200,8 @@ function toRecord(row: DriveRow): DriveAssetRecord {
     error: row.error,
     assetId: row.asset_id,
     matchGroup: row.match_group,
+    retryCount: row.retry_count ?? 0,
+    failedAt: row.failed_at ?? null,
     detectedAt: row.detected_at,
     updatedAt: row.updated_at,
   };
@@ -262,6 +266,8 @@ export async function importDriveFile(
       .update({
         status,
         error: null,
+        retry_count: 0,
+        failed_at: null,
         asset_id: asset.id,
         match_group: matchGroup,
         matched_variant_key: matchedKey,
@@ -276,7 +282,13 @@ export async function importDriveFile(
     const message = err instanceof Error ? err.message : "The import failed.";
     const { data: failedRow } = await db
       .from("drive_assets")
-      .update({ status: "FAILED", error: message, updated_at: new Date().toISOString() })
+      .update({
+        status: "FAILED",
+        error: message,
+        retry_count: (row.retry_count ?? 0) + 1,
+        failed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
       .eq("drive_file_id", row.drive_file_id)
       .select("*")
       .single();
@@ -315,6 +327,44 @@ export async function listDriveAssets(params: {
   return (data as DriveRow[]).map(toRecord);
 }
 
+/** Minutes between scheduled Drive synchronizations (backend pg_cron job). */
+export const DRIVE_SYNC_INTERVAL_MINUTES = 15;
+/** Credential failures never fix themselves: scheduled runs pause this long. */
+const DRIVE_AUTH_COOLDOWN_MS = 30 * 60_000;
+/** Recoverable failed files are retried by the scheduler at most this many times. */
+const MAX_AUTO_RETRIES = 3;
+const RETRY_DELAY_MS = 15 * 60_000;
+const LOCK_STALE_SECONDS = 600;
+const BLOCKING = ["auth", "permission", "config"];
+
+type SyncCounters = {
+  checked: number;
+  newFiles: number;
+  updatedFiles: number;
+  imported: number;
+  matched: number;
+  review: number;
+  unmatched: number;
+  failed: number;
+  missing: number;
+};
+
+const emptyCounters = (): SyncCounters => ({
+  checked: 0,
+  newFiles: 0,
+  updatedFiles: 0,
+  imported: 0,
+  matched: 0,
+  review: 0,
+  unmatched: 0,
+  failed: 0,
+  missing: 0,
+});
+
+export async function setAutoSync(enabled: boolean) {
+  await writeState({ auto_sync_enabled: enabled });
+}
+
 export async function getDriveStatus(): Promise<DriveSyncStatus> {
   const state = await readState();
   const db = await admin();
@@ -322,6 +372,19 @@ export async function getDriveStatus(): Promise<DriveSyncStatus> {
   const rows = (data ?? []) as { status: string }[];
   const count = (...statuses: string[]) => rows.filter((r) => statuses.includes(r.status)).length;
   const c = driveConfig();
+  const raw = (state?.counters ?? {}) as Partial<SyncCounters> & Record<string, number>;
+  const autoEnabled = Boolean(state?.auto_sync_enabled);
+  const startedAt = state?.sync_started_at ? new Date(state.sync_started_at).getTime() : 0;
+  const running =
+    Boolean(state?.sync_running) && Date.now() - startedAt < LOCK_STALE_SECONDS * 1000;
+  const kind = state?.last_error_kind ?? null;
+  const lastRun = state?.last_scheduler_run_at ?? state?.last_sync_at ?? null;
+  let nextScheduledAt: string | null = null;
+  if (autoEnabled) {
+    // pg_cron fires at every quarter hour (:00, :15, :30, :45).
+    const step = DRIVE_SYNC_INTERVAL_MINUTES * 60_000;
+    nextScheduledAt = new Date(Math.ceil((Date.now() + 1) / step) * step).toISOString();
+  }
   return {
     connected: Boolean(c.lovableKey && c.connectionKey),
     importMode: (state?.import_mode ?? "manual") as DriveImportMode,
@@ -329,6 +392,24 @@ export async function getDriveStatus(): Promise<DriveSyncStatus> {
     lastSyncAt: state?.last_sync_at ?? null,
     lastStatus: state?.last_status ?? null,
     lastError: state?.last_error ?? null,
+    lastErrorKind: kind,
+    authRequired: state?.last_status === "failed" && kind === "auth",
+    autoSyncEnabled: autoEnabled,
+    intervalMinutes: DRIVE_SYNC_INTERVAL_MINUTES,
+    nextScheduledAt,
+    lastSchedulerRunAt: lastRun,
+    lastTrigger: state?.last_trigger ?? null,
+    lastRun: {
+      checked: raw.checked ?? raw.detected ?? 0,
+      newFiles: raw.newFiles ?? 0,
+      updatedFiles: raw.updatedFiles ?? 0,
+      imported: raw.imported ?? 0,
+      matched: raw.matched ?? 0,
+      review: raw.review ?? 0,
+      unmatched: raw.unmatched ?? 0,
+      failed: raw.failed ?? 0,
+      missing: raw.missing ?? 0,
+    },
     counters: {
       detected: rows.length,
       imported: count("IMPORTED", "IN_USE", "UPDATED"),
@@ -337,7 +418,7 @@ export async function getDriveStatus(): Promise<DriveSyncStatus> {
       updated: count("UPDATED"),
       unmatched: count("UNMATCHED", "REVIEW"),
     },
-    syncing: Boolean(state?.sync_running),
+    syncing: running,
   };
 }
 
@@ -348,43 +429,63 @@ export type DriveSyncOutcome = {
   imported: number;
   failed: number;
   waiting: number;
+  kind?: string;
+  counters?: SyncCounters;
 };
 
+const skipped = (message: string): DriveSyncOutcome => ({
+  status: "skipped",
+  message,
+  detected: 0,
+  imported: 0,
+  failed: 0,
+  waiting: 0,
+});
+
 /**
- * Periodic (and on-demand) Drive synchronization: detect, classify by folder,
- * validate, then import according to the configured mode.
+ * Incremental, idempotent Drive synchronization (scheduled or on demand).
+ * The Drive file ID is the identity: renames and content updates reuse the same
+ * row and asset. Only new, modified, reappeared or retry-eligible files are processed.
+ * Only one run may hold the lease; a crashed run's lease expires after 10 minutes.
  */
-export async function syncDrive(): Promise<DriveSyncOutcome> {
+export async function syncDrive(trigger: "manual" | "auto" = "manual"): Promise<DriveSyncOutcome> {
   const db = await admin();
   const state = await readState();
-  if (state?.sync_running) {
-    const startedAgo = state.updated_at ? Date.now() - new Date(state.updated_at).getTime() : 0;
-    if (startedAgo < 5 * 60_000) {
-      return {
-        status: "skipped",
-        message: "A Drive synchronization is already running.",
-        detected: 0,
-        imported: 0,
-        failed: 0,
-        waiting: 0,
-      };
+  if (!state) return skipped("Drive synchronization is not initialised.");
+
+  if (trigger === "auto") {
+    await writeState({ last_scheduler_run_at: new Date().toISOString() });
+    if (!state.auto_sync_enabled) return skipped("Automatic Drive sync is disabled.");
+    const lastAt = state.last_sync_at ? new Date(state.last_sync_at).getTime() : 0;
+    if (
+      state.last_status === "failed" &&
+      BLOCKING.includes(state.last_error_kind ?? "") &&
+      Date.now() - lastAt < DRIVE_AUTH_COOLDOWN_MS
+    ) {
+      console.warn(`[drive] scheduled run paused after ${state.last_error_kind} failure`);
+      return skipped("Paused until Google Drive access is restored.");
     }
   }
-  await writeState({ sync_running: true });
 
-  const mode = (state?.import_mode ?? "manual") as DriveImportMode;
-  let detected = 0;
-  let imported = 0;
-  let failed = 0;
-  let waiting = 0;
+  const { data: acquired, error: lockError } = await db.rpc("acquire_drive_sync_lock", {
+    _stale_seconds: LOCK_STALE_SECONDS,
+  });
+  if (lockError) throw lockError;
+  if (!acquired) return skipped("Sync already in progress");
+
+  const mode = (state.import_mode ?? "manual") as DriveImportMode;
+  const auto = mode === "automatic" || mode === "automatic_apply";
+  const c = emptyCounters();
+  console.info(`[drive] sync started trigger=${trigger} mode=${mode}`);
 
   try {
-    const rootId = await findRootFolder(state?.root_folder_id ?? null);
+    const rootId = await findRootFolder(state.root_folder_id ?? null);
     const folders = await listChildren(
       rootId,
       " and mimeType='application/vnd.google-apps.folder'",
     );
     const byName = new Map(folders.map((f) => [f.name.trim().toLowerCase(), f]));
+    const retryBefore = Date.now() - RETRY_DELAY_MS;
 
     for (const mapping of DRIVE_FOLDER_TYPES) {
       const folder = byName.get(mapping.folder.toLowerCase());
@@ -394,43 +495,57 @@ export async function syncDrive(): Promise<DriveSyncOutcome> {
       try {
         files = await listChildren(folder.id, " and mimeType contains 'image/'");
       } catch (err) {
+        if (err instanceof DriveError && BLOCKING.includes(err.kind)) throw err;
         console.error(`[drive] folder listing failed folder=${mapping.folder}`, err);
         continue;
       }
 
-      const ids = files.map((f) => f.id);
       const known = new Map<string, DriveRow>();
-      for (let i = 0; i < ids.length; i += 300) {
-        const { data } = await db
-          .from("drive_assets")
-          .select("*")
-          .in("drive_file_id", ids.slice(i, i + 300));
-        for (const row of (data ?? []) as DriveRow[]) known.set(row.drive_file_id, row);
-      }
+      const { data: folderRows } = await db
+        .from("drive_assets")
+        .select("*")
+        .eq("folder", mapping.folder);
+      for (const row of (folderRows ?? []) as DriveRow[]) known.set(row.drive_file_id, row);
 
+      const seen = new Set<string>();
       const toProcess: string[] = [];
-      const rows = files.map((file) => {
+      const rows: Record<string, unknown>[] = [];
+      for (const file of files) {
+        seen.add(file.id);
+        c.checked += 1;
         const previous = known.get(file.id);
         const modified = file.modifiedTime ?? null;
-        const changed =
+        const reappeared = previous?.status === "MISSING";
+        const contentChanged =
           !previous ||
+          reappeared ||
           previous.drive_modified_at !== modified ||
           previous.asset_type !== mapping.type;
-        // A renamed file keeps its row: the Drive file ID is the identity.
-        const status = previous
-          ? changed && previous.status !== "IGNORED"
-            ? "UPDATED"
-            : previous.status
-          : "DETECTED";
-        if (
-          changed &&
-          previous?.status !== "IGNORED" &&
-          (mode === "automatic" || mode === "automatic_apply")
-        ) {
-          toProcess.push(file.id);
+        const renamed = Boolean(previous && previous.name !== file.name);
+        if (!contentChanged && !renamed) {
+          // Unchanged: only failed files that are due for a bounded retry are touched.
+          if (
+            auto &&
+            previous?.status === "FAILED" &&
+            (previous.retry_count ?? 0) < MAX_AUTO_RETRIES &&
+            (!previous.failed_at || new Date(previous.failed_at).getTime() < retryBefore)
+          ) {
+            toProcess.push(file.id);
+          }
+          continue;
         }
-        detected += 1;
-        return {
+        if (!previous) c.newFiles += 1;
+        else c.updatedFiles += 1;
+        const ignored = previous?.status === "IGNORED";
+        const status = !previous
+          ? "DETECTED"
+          : ignored
+            ? "IGNORED"
+            : contentChanged
+              ? "UPDATED"
+              : previous.status;
+        if (contentChanged && !ignored && auto) toProcess.push(file.id);
+        rows.push({
           drive_file_id: file.id,
           name: file.name,
           folder: mapping.folder,
@@ -439,9 +554,10 @@ export async function syncDrive(): Promise<DriveSyncOutcome> {
           file_size: file.size ? Number(file.size) : null,
           drive_modified_at: modified,
           status,
+          ...(contentChanged ? { retry_count: 0 } : {}),
           updated_at: new Date().toISOString(),
-        };
-      });
+        });
+      }
 
       for (let i = 0; i < rows.length; i += 300) {
         const { error } = await db
@@ -450,10 +566,33 @@ export async function syncDrive(): Promise<DriveSyncOutcome> {
         if (error) throw error;
       }
 
+      // Files that disappeared (deleted / moved / no longer shared). The imported
+      // asset and any card assignments are kept; the row is only flagged.
+      const missing = [...known.values()]
+        .filter((r) => !seen.has(r.drive_file_id) && r.status !== "MISSING")
+        .map((r) => r.drive_file_id);
+      for (let i = 0; i < missing.length; i += 300) {
+        await db
+          .from("drive_assets")
+          .update({
+            status: "MISSING",
+            error: "No longer found in Google Drive.",
+            updated_at: new Date().toISOString(),
+          })
+          .in("drive_file_id", missing.slice(i, i + 300));
+      }
+      c.missing += missing.length;
+
       for (const fileId of toProcess) {
+        // Error isolation: importDriveFile records failures per file and never throws.
         const result = await importDriveFile(fileId, { apply: mode === "automatic_apply" });
-        if (result.status === "FAILED") failed += 1;
-        else imported += 1;
+        if (result.status === "FAILED") c.failed += 1;
+        else {
+          c.imported += 1;
+          if (result.status === "IN_USE") c.matched += 1;
+          if (result.status === "REVIEW") c.review += 1;
+          if (result.status === "UNMATCHED") c.unmatched += 1;
+        }
       }
     }
 
@@ -461,29 +600,52 @@ export async function syncDrive(): Promise<DriveSyncOutcome> {
       .from("drive_assets")
       .select("status")
       .in("status", ["DETECTED", "READY", "NEW", "UPDATED"]);
-    waiting = (pending ?? []).length;
+    const waiting = (pending ?? []).length;
 
     const message =
       mode === "manual"
-        ? `${detected} files detected · ${waiting} waiting for approval.`
-        : `${detected} files detected · ${imported} imported${failed ? ` · ${failed} failed` : ""}.`;
+        ? `${c.checked} files checked · ${c.newFiles} new · ${c.updatedFiles} updated · ${waiting} waiting for approval.`
+        : `${c.checked} files checked · ${c.newFiles} new · ${c.updatedFiles} updated · ${c.imported} imported${c.failed ? ` · ${c.failed} failed` : ""}.`;
 
     await writeState({
       sync_running: false,
       last_sync_at: new Date().toISOString(),
       last_status: "success",
       last_error: null,
-      counters: { detected, imported, failed, waiting },
+      last_error_kind: null,
+      last_trigger: trigger,
+      counters: { ...c, detected: c.checked, waiting },
     });
-    return { status: "success", message, detected, imported, failed, waiting };
+    console.info(`[drive] sync finished ${message}`);
+    return {
+      status: "success",
+      message,
+      detected: c.checked,
+      imported: c.imported,
+      failed: c.failed,
+      waiting,
+      counters: c,
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Drive synchronization failed.";
+    const kind = err instanceof DriveError ? err.kind : "unknown";
+    console.error(`[drive] sync failed kind=${kind}: ${message}`);
     await writeState({
       sync_running: false,
       last_sync_at: new Date().toISOString(),
       last_status: "failed",
       last_error: message,
+      last_error_kind: kind,
+      last_trigger: trigger,
     });
-    return { status: "failed", message, detected, imported, failed, waiting };
+    return {
+      status: "failed",
+      message,
+      detected: c.checked,
+      imported: c.imported,
+      failed: c.failed,
+      waiting: 0,
+      kind,
+    };
   }
 }

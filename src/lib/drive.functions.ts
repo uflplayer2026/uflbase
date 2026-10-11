@@ -43,7 +43,7 @@ export const runDriveSync = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await guard(context.claims);
     const { syncDrive } = await import("./drive.server");
-    return syncDrive();
+    return syncDrive("manual");
   });
 
 export const setDriveImportMode = createServerFn({ method: "POST" })
@@ -85,5 +85,15 @@ export const setDriveAssetStatus = createServerFn({ method: "POST" })
     await guard(context.claims);
     const { setDriveStatus } = await import("./drive.server");
     await setDriveStatus(data.driveFileId, data.status);
+    return { ok: true };
+  });
+
+export const setDriveAutoSync = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ enabled: z.boolean() }).parse(data))
+  .handler(async ({ context, data }): Promise<{ ok: true }> => {
+    await guard(context.claims);
+    const { setAutoSync } = await import("./drive.server");
+    await setAutoSync(data.enabled);
     return { ok: true };
   });
