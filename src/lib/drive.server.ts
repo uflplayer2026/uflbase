@@ -413,7 +413,7 @@ export async function assignDriveImageToCard(
   driveFileId: string,
   variantKeyValue: string,
   options: { replaceExisting?: boolean },
-): Promise<{ assigned: boolean; assetId: string; url: string; reason?: string }> {
+): Promise<{ assigned: boolean; assetId: string; url: string; reason?: string | undefined }> {
   const preview = await previewDriveImage(driveFileId);
   const { assignCardImages } = await import("./assets.server");
   const result = await assignCardImages(
