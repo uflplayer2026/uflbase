@@ -300,6 +300,7 @@ export async function setImportMode(mode: DriveImportMode) {
 export async function listDriveAssets(params: {
   status?: string | undefined;
   type?: string | undefined;
+  q?: string | undefined;
   limit?: number | undefined;
 }): Promise<DriveAssetRecord[]> {
   const db = await admin();
@@ -310,9 +311,133 @@ export async function listDriveAssets(params: {
     .limit(Math.min(params.limit ?? 200, 500));
   if (params.status) query = query.eq("status", params.status);
   if (params.type) query = query.eq("asset_type", params.type);
+  if (params.q) query = query.ilike("name", `%${params.q.replace(/[%_]/g, "")}%`);
   const { data, error } = await query;
   if (error) throw error;
   return (data as DriveRow[]).map(toRecord);
+}
+
+/**
+ * Makes sure a Drive file is tracked. Detected files already have a row; a file
+ * referenced directly by ID/URL gets its metadata fetched from Drive first.
+ */
+async function ensureDriveRow(driveFileId: string): Promise<DriveRow> {
+  const db = await admin();
+  const { data, error } = await db
+    .from("drive_assets")
+    .select("*")
+    .eq("drive_file_id", driveFileId)
+    .maybeSingle();
+  if (error) throw error;
+  if (data) return data as DriveRow;
+
+  const res = await driveFetch(`/files/${driveFileId}`, {
+    fields: "id,name,mimeType,size,modifiedTime,trashed",
+  });
+  const file = (await res.json()) as DriveFile & { trashed?: boolean };
+  if (file.trashed) throw new DriveError("not_found", "That Drive file is in the trash.");
+  if (file.mimeType && !file.mimeType.startsWith("image/")) {
+    throw new DriveError("unknown", "That Drive file is not an image.");
+  }
+  const row = {
+    drive_file_id: file.id,
+    name: file.name,
+    folder: "Manual",
+    asset_type: "PLAYER_CARD",
+    mime_type: file.mimeType,
+    file_size: file.size ? Number(file.size) : null,
+    drive_modified_at: file.modifiedTime ?? null,
+    status: "DETECTED",
+    updated_at: new Date().toISOString(),
+  };
+  const { data: inserted, error: insertError } = await db
+    .from("drive_assets")
+    .upsert(row, { onConflict: "drive_file_id" })
+    .select("*")
+    .single();
+  if (insertError) throw insertError;
+  return inserted as DriveRow;
+}
+
+export type DriveImagePreview = {
+  driveFileId: string;
+  assetId: string;
+  name: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+};
+
+/**
+ * Imports a Drive image into UFLBase storage WITHOUT assigning it to a card, so
+ * the administrator can preview the real pixels before confirming. The file is
+ * downloaded once through the authenticated connection — no public Drive links.
+ */
+export async function previewDriveImage(driveFileId: string): Promise<DriveImagePreview> {
+  const row = await ensureDriveRow(driveFileId);
+  if (row.mime_type && !isSupportedMime(row.mime_type)) {
+    throw new Error(`Unsupported format (${row.mime_type}).`);
+  }
+  const { bytes, mime } = await downloadDriveFile(row.drive_file_id);
+  const { upsertDriveAsset } = await import("./assets.server");
+  const { asset } = await upsertDriveAsset({
+    driveFileId: row.drive_file_id,
+    name: row.name,
+    folder: row.folder,
+    type: "PLAYER_CARD",
+    bytes,
+    declaredMime: mime || row.mime_type,
+    driveModifiedAt: row.drive_modified_at,
+  });
+  const db = await admin();
+  await db
+    .from("drive_assets")
+    .update({ status: "IMPORTED", asset_id: asset.id, updated_at: new Date().toISOString() })
+    .eq("drive_file_id", row.drive_file_id);
+  return {
+    driveFileId: row.drive_file_id,
+    assetId: asset.id,
+    name: asset.name,
+    url: asset.url,
+    width: asset.width,
+    height: asset.height,
+  };
+}
+
+/**
+ * Assigns a Drive image to one specific, administrator-chosen card. Never
+ * guesses: the target card is explicit. Existing card images are protected
+ * unless replaceExisting is set.
+ */
+export async function assignDriveImageToCard(
+  driveFileId: string,
+  variantKeyValue: string,
+  options: { replaceExisting?: boolean },
+): Promise<{ assigned: boolean; assetId: string; url: string; reason?: string }> {
+  const preview = await previewDriveImage(driveFileId);
+  const { assignCardImages } = await import("./assets.server");
+  const result = await assignCardImages(
+    [{ variantKey: variantKeyValue, assetId: preview.assetId }],
+    { replaceExisting: Boolean(options.replaceExisting) },
+  );
+  const db = await admin();
+  const assigned = result.assigned > 0;
+  await db
+    .from("drive_assets")
+    .update({
+      status: assigned ? "IN_USE" : "IMPORTED",
+      matched_variant_key: assigned ? variantKeyValue : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("drive_file_id", driveFileId);
+  return {
+    assigned,
+    assetId: preview.assetId,
+    url: preview.url,
+    reason: assigned
+      ? undefined
+      : "That card already has an image. Enable replace to overwrite it.",
+  };
 }
 
 export async function getDriveStatus(): Promise<DriveSyncStatus> {
