@@ -32,6 +32,7 @@ import { LoadingState } from "@/components/CardsState";
 import type { PlayerCardRecord } from "@/lib/playerTypes";
 import { CardTypesTab } from "@/components/admin/CardTypesTab";
 import { DriveTab } from "@/components/admin/DriveTab";
+import { DriveAssignTab } from "@/components/admin/DriveAssignTab";
 import { CompositionEditor } from "@/components/admin/CompositionEditor";
 
 export const Route = createFileRoute("/_authenticated/assets")({
@@ -53,6 +54,7 @@ const TABS = [
   { id: "backgrounds", label: "Backgrounds" },
   { id: "cardtypes", label: "Card types" },
   { id: "drive", label: "Google Drive" },
+  { id: "assign", label: "Assign image" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
