@@ -294,7 +294,14 @@ export async function readAssetFile(
 
 export type CardAssetLink = {
   variantKey: string;
-  cardImage: { id: string; url: string; width: number | null; height: number | null } | null;
+  cardImage: {
+    id: string;
+    url: string;
+    width: number | null;
+    height: number | null;
+    /** Asset type drives the fit: portraits cover, complete cards are contained. */
+    type: string;
+  } | null;
   /** Explicit per-card background override. Card type mappings never touch it. */
   background: {
     id: string;
