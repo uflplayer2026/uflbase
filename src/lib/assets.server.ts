@@ -294,7 +294,14 @@ export async function readAssetFile(
 
 export type CardAssetLink = {
   variantKey: string;
-  cardImage: { id: string; url: string; width: number | null; height: number | null } | null;
+  cardImage: {
+    id: string;
+    url: string;
+    width: number | null;
+    height: number | null;
+    /** Asset type drives the fit: portraits cover, complete cards are contained. */
+    type: string;
+  } | null;
   /** Explicit per-card background override. Card type mappings never touch it. */
   background: {
     id: string;
@@ -317,14 +324,17 @@ type AssetArtRow = {
   url: string;
   width: number | null;
   height: number | null;
+  asset_type: string;
   safe_area: unknown;
   protected_areas: unknown;
 };
 
-const ART_SELECT = "id, url, width, height, safe_area, protected_areas";
+const ART_SELECT = "id, url, width, height, asset_type, safe_area, protected_areas";
 
 export function toImageArt(row: AssetArtRow | undefined) {
-  return row ? { id: row.id, url: row.url, width: row.width, height: row.height } : null;
+  return row
+    ? { id: row.id, url: row.url, width: row.width, height: row.height, type: row.asset_type }
+    : null;
 }
 
 export function toBackgroundArt(row: AssetArtRow | undefined) {

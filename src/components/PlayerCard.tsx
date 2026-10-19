@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { ImageOff } from "lucide-react";
 import type { PlayerCardRecord } from "@/lib/playerTypes";
 import { STAT_KEYS } from "@/lib/playerTypes";
@@ -15,6 +15,9 @@ function PlayerCardBase({ player }: { player: PlayerCardRecord }) {
   const name = player.playerName || "Unknown player";
   // Card image and background are separate assets and are resolved separately.
   const art = resolveCardArt(player, useCardAssetMap(), useCardTypeMap());
+  // Broken or unreachable image URLs fall back to the clean placeholder.
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const imageUrl = art.imageUrl && art.imageUrl !== failedUrl ? art.imageUrl : null;
 
   return (
     <article className="player-card">
@@ -30,23 +33,39 @@ function PlayerCardBase({ player }: { player: PlayerCardRecord }) {
           />
         ) : null}
 
-        {art.imageUrl ? (
-          // Layered composition: the image is fitted inside the background's safe area,
-          // aspect ratio preserved, never cropped and never overflowing the card.
-          <img
-            src={art.imageUrl}
-            alt={`${name} — ${player.position || "player"} card${
-              player.ovr === null ? "" : `, ${player.ovr} overall`
-            }`}
-            loading="lazy"
-            decoding="async"
-            className="player-card-image"
-            style={
-              art.backgroundUrl
-                ? compositionStyle(art.composition)
-                : { position: "relative", height: "100%", width: "100%", objectFit: "contain" }
-            }
-          />
+        {imageUrl ? (
+          art.imageKind === "portrait" ? (
+            // Player portrait: cover the artwork region, anchored towards the top
+            // so the face is never cut off. Aspect ratio is always preserved.
+            <img
+              src={imageUrl}
+              alt={`${name} — ${player.position || "player"} portrait${
+                player.ovr === null ? "" : `, ${player.ovr} overall`
+              }`}
+              loading="lazy"
+              decoding="async"
+              className="player-card-image player-card-portrait"
+              onError={() => setFailedUrl(imageUrl)}
+            />
+          ) : (
+            // Complete card image: layered composition inside the background's
+            // safe area, aspect ratio preserved, never cropped, never overflowing.
+            <img
+              src={imageUrl}
+              alt={`${name} — ${player.position || "player"} card${
+                player.ovr === null ? "" : `, ${player.ovr} overall`
+              }`}
+              loading="lazy"
+              decoding="async"
+              className="player-card-image"
+              style={
+                art.backgroundUrl
+                  ? compositionStyle(art.composition)
+                  : { position: "relative", height: "100%", width: "100%", objectFit: "contain" }
+              }
+              onError={() => setFailedUrl(imageUrl)}
+            />
+          )
         ) : (
           <div className="player-card-placeholder">
             <ImageOff className="size-6" aria-hidden />

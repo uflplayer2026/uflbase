@@ -29,13 +29,46 @@ export const listDriveFiles = createServerFn({ method: "GET" })
       .object({
         status: z.enum(IMPORT_STATUSES).optional(),
         type: z.enum(ASSET_TYPES).optional(),
+        q: z.string().max(120).optional(),
       })
       .parse(data ?? {}),
   )
   .handler(async ({ context, data }): Promise<DriveAssetRecord[]> => {
     await guard(context.claims);
     const { listDriveAssets } = await import("./drive.server");
-    return listDriveAssets({ status: data.status, type: data.type });
+    return listDriveAssets({ status: data.status, type: data.type, q: data.q });
+  });
+
+/** Imports a Drive image for preview only — nothing is assigned to a card yet. */
+export const previewDriveImageFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ driveFileId: z.string().min(4).max(200) }).parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    await guard(context.claims);
+    const { previewDriveImage } = await import("./drive.server");
+    return previewDriveImage(data.driveFileId);
+  });
+
+/** Assigns a Drive image to one explicitly chosen card, with replace protection. */
+export const assignDriveImageToCardFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        driveFileId: z.string().min(4).max(200),
+        variantKey: z.string().min(1),
+        replaceExisting: z.boolean().default(false),
+      })
+      .parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    await guard(context.claims);
+    const { assignDriveImageToCard } = await import("./drive.server");
+    return assignDriveImageToCard(data.driveFileId, data.variantKey, {
+      replaceExisting: data.replaceExisting,
+    });
   });
 
 export const runDriveSync = createServerFn({ method: "POST" })
