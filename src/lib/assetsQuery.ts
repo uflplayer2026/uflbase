@@ -50,6 +50,12 @@ export type CardArt = {
   imageUrl: string | null;
   backgroundUrl: string | null;
   imageFromAsset: boolean;
+  /**
+   * "portrait" — a player portrait that should cover the artwork region without
+   * cutting off the face; "card" — a complete card image that is always fully
+   * visible (contained, never cropped).
+   */
+  imageKind: "portrait" | "card";
   /** Where the background came from: an explicit per-card choice or the card type rule. */
   backgroundSource: "manual" | "card-type" | "none";
   composition: CompositionResult;
@@ -90,6 +96,7 @@ export function resolveCardArt(
     imageUrl: link?.cardImage?.url ?? (player.cardImage || null),
     backgroundUrl: background?.url ?? null,
     imageFromAsset: Boolean(link?.cardImage),
+    imageKind: link?.cardImage?.type === "PLAYER_PORTRAIT" ? "portrait" : "card",
     backgroundSource: manual ? "manual" : inherited ? "card-type" : "none",
     composition,
     compositionManual: Boolean(link?.composition),
