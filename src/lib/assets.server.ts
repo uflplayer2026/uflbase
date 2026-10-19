@@ -324,14 +324,17 @@ type AssetArtRow = {
   url: string;
   width: number | null;
   height: number | null;
+  asset_type: string;
   safe_area: unknown;
   protected_areas: unknown;
 };
 
-const ART_SELECT = "id, url, width, height, safe_area, protected_areas";
+const ART_SELECT = "id, url, width, height, asset_type, safe_area, protected_areas";
 
 export function toImageArt(row: AssetArtRow | undefined) {
-  return row ? { id: row.id, url: row.url, width: row.width, height: row.height } : null;
+  return row
+    ? { id: row.id, url: row.url, width: row.width, height: row.height, type: row.asset_type }
+    : null;
 }
 
 export function toBackgroundArt(row: AssetArtRow | undefined) {
